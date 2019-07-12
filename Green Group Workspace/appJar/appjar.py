@@ -164,8 +164,7 @@ WIDGET_NAMES = Enum(
     excluded=["DatePicker", "SubWindow", "Window", "Toolbar",
         "Note", "Tab", "Page", "Pane", "RootPage", "FlashLabel",
         "AnimationID", "ImageCache", "TickOptionBox", "Bindings",
-        "FileEntry", "DirectoryEntry",
-        "FrameBox", "FrameLabel", "ContainerLog", "Menu"],
+        "FileEntry", "DirectoryEntry", "FrameBox", "FrameLabel", "ContainerLog", "Menu"],
     keepers=["Bindings", "ImageCache", "Menu", "Toolbar"]
 )
 
@@ -3698,7 +3697,7 @@ class gui(object):
             containerData = self._prepContainer(containerData["title"], containerData["type"], containerData["container"], 0, 1)
             self.containerStack[0] = containerData
 
-#            self.widgetManager.reset(WIDGET_NAMES.keepers)
+            # self.widgetManager.reset(WIDGET_NAMES.keepers)
 #            self.setSize(None)
 
     def _emptyContainerObj(self, container):
@@ -9024,7 +9023,7 @@ class gui(object):
         # allow an alternative kwarg
         if "col" in kwargs: kwargs["column"]=kwargs.pop("col")
 
-        # let user specify stickt/stretch/expan
+        # let user specify stickt//expan
         sticky = kwargs.pop("sticky", None)
         if sticky is not None: self.setSticky(sticky)
         stretch = kwargs.pop("stretch", None)
