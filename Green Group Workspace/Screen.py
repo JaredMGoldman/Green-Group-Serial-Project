@@ -52,9 +52,13 @@ class Screen(aj.gui):
 
         self.slaveDict = {1:9, 2:9, 3:9, 4:9, 5:9, 6:9, 7:9, 8:9}
 
-        self.slaveBool = {1:False, 2:False, 3:False, 4:False, 5:False, 6:False, 7:False, 8:False}
-
+    
         self.saveSerial = 0
+
+        self.slaveDict= {1:[9,0.0, False, False], 2:[9,0.0, False, False], 
+                        3:[9,0.0, False, False], 4:[9,0.0, False, False], 
+                        5:[9,0.0, False, False], 6:[9,0.0, False, False], 
+                        7:[9,0.0, False, False], 8:[9,0.0, False, False]} 
         
         super().__init__(title=None, geom=None, handleArgs=True, language=None, startWindow=None, useTtk=False, useSettings=False, showIcon=True, **kwargs)
     
@@ -193,10 +197,12 @@ class Screen(aj.gui):
         self.start = time.time()
         
         # First attempt at automatic update functionality.
-        while(time.time()-self.start <= (60*int(self.cycles)*int(self.lengthEach))):
+        while(time.time()-self.start <= (60*self.cycles*self.lengthEach)):
+            self.iter += 1
             time.sleep(2)
             reP(axes0)
             reFC(axes1)
+            print("Update Number: " + str(self.iter))
         
                                     #########################################
                                     ################ FLOW RATE ##############     
@@ -291,7 +297,7 @@ class Screen(aj.gui):
             if save_criteria:
                 self.pressureSerial += 1
                 self.initialTime = stop
-                self.data.setMFCBehaviorDict(self.gasDict[self.gasIndex], self.gasIndex, self.behavior, self.initialTime, stop, mag0, units0, mag1, units1, oscillations)
+                self.data.setMFCBehaviorDict(self.gasDict[self.gasIndex[self.iter]], self.gasIndex, self.behavior, self.initialTime, stop, mag0, units0, mag1, units1, oscillations)
                 self.removeButton("Okay")
                 self.rowCtr += 1
                 self.addHorizontalSeparator(row = self.rowCtr, column = 0,colspan=8, colour="black",)
@@ -475,8 +481,10 @@ class Screen(aj.gui):
         self.gasCtrDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}
         self.gasCtr = 0
         self.gasDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}
-        self.slaveBool = {1:False, 2:False, 3:False, 4:False, 5:False, 6:False, 7:False, 8:False}
-        self.slaveDict = {1:9, 2:9, 3:9, 4:9, 5:9, 6:9, 7:9, 8:9}
+        self.slaveDict = {1:[9,0.0, False, False], 2:[9,0.0, False, False], 
+                        3:[9,0.0, False, False], 4:[9,0.0, False, False], 
+                        5:[9,0.0, False, False], 6:[9,0.0, False, False], 
+                        7:[9,0.0, False, False], 8:[9,0.0, False, False]} 
         self.gasIndex = []
         self.iter = 0
         
@@ -487,6 +495,14 @@ class Screen(aj.gui):
                     if self.getOptionBox("Gases"+str(self.gasCtrDict[i])) == None:
                         save_bool = False
                         self.warningBox("Invalid Entry", "Make sure that you have chosen a gas for each active port.")
+                    if self.errflag == 0 and self.slaveDict[i][2]:
+                        master, ratio = self.getOptionBox("Master"+str(i)), self.getEntry("Ratio" + str(i))
+                        if master == None or ratio == None:
+                            save_bool = False
+                            self.warningBox("Invalid Entry", "Make sure that you have chosen a master and ratio for each slave.")
+                        else:
+                            slaveDict[i][0], slaveDict[i][1] = master, ratio
+                            
                     if save_bool:
                         self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
             if save_bool:
@@ -499,42 +515,116 @@ class Screen(aj.gui):
                 else:
                     self.render2fc2()
         
+        def removeSlaveDetails(index):
+            self.slaveDict[index][2] = False
+            self.removeCheckBox("Slave"+str(index))
+            self.removeLabel("M-name" + str(index))
+            self.removeOptionBox("Master" + str(index))
+            self.removeLabel(str(index))
+            self.removeEntry("Ratio" + str(index))
+
+        def slaveFunc(btn):
+            for i in range(1,9):
+                if self.slaveDict[i][3]:
+                    self.slaveDict[i][2] = self.getCheckBox("Slave"+str(i))
+        
         def myLittleFunc(change):
             """
             input:
                     none
             output:
-                    displays or hides selection box for MFC ports depending upon value of corresponding check-box
+                    displays or hides selection box for MFC ports 
+                    depending upon value of corresponding check-box
 
-            This function occurs when a check-box next to a port is toggled.  The result is to hide or display the gas selection 
+            This function occurs when a check-box next to a port is 
+            toggled.  The result is to hide or display the gas selection 
             optionBox, depending upon its previous visibility. 
             
-            This function also updates self.myDict with the value 0/1 dpending on whether there is (1) or is not (0) a gas present 
+            This function also updates self.myDict with the value 0/1 
+            depending on whether there is (1) or is not (0) a gas present 
             at a particular port.
 
-            Additionally, this function employs self.gasCtrDict to save the gas serial number corresponding to the active MFC ports.
-            In this way, it is possible to trace back the gas type to a correspondingly labeled optionBox ("Gases(gas Serial)") as 
+            Additionally, this function employs self.gasCtrDict to save 
+            the gas serial number corresponding to the active MFC ports.
+            In this way, it is possible to trace back the gas type to a 
+            correspondingly labeled optionBox ("Gases(gas Serial)") as 
             accomplished upon completion of this page. 
             """
-            rowRef = {1:2, 2:2, 3:3, 4:3, 5:4, 6:4, 7:5, 8:5}
-            col = 4
+            
+            if self.errflag == 1:
+                rowRef = {1:2, 2:2, 3:4, 4:4, 5:6, 6:6, 7:8, 8:8}
+            else:
+                rowRef = {1:2, 2:2, 3:5, 4:5, 5:8, 6:8, 7:11, 8:11}
+            
             for i in range(1,9):
+                if self.errflag == 1:
+                    if i % 2 == 1:  col = 1
+                    else:           col = 4
+                else:
+                    if i % 2 == 1:  col = 1
+                    else:           col = 7
                 if self.getCheckBox("Port " + str(i)) and self.myDict.get(i) == 0:
                     self.myDict[i] = 1
-                    if i % 2 == 1:
-                        col = 2
                     rows = rowRef[i]
-                    self.addOptionBox("Gases" + str(self.gasCtr), ["- Gases -", "- Commonly Used -", "Air", "Carbon Dioxide", "Helium", "Hydrogen", "Nitrogen", "Oxygen", "-Commonly Used -","Actylene", "Air", "Ammonia", "Argon", "Arsine", "Boron Trichloride", "Bromine", "Carbon Dioxide", "Carbon Monoxide", "Carbon Tetrachloride", "Carbon Tetraflouride", "Chlorine", "Chlorodifluoromethane", "Chloropentafluoromethane", "Cyanogen", "Deuterium", "Diborane", "Dibromane", "Dibromodifluoromethane", "Dichlorodifluoromethane", "Dichlorofluoromethane", "Dichloromethysilane", "Dichlorosilane", "Dichlorotetrafluoroethane", "Difluoroethylene", "Dimethylpropane", "Ethane", "Fluorine", "Fluoroform", "Freon - 11", "Freon - 12", "Freon - 13", "Freon - 14", "Freon - 21", "Freon - 22", "Freon - 23", "Freon - 113", "Freon - 114", "Freon - 115", "Freon - 116", "Freon - C318", "Freon - 1132A", "Helium", "Hexafluoroethane", "Hydrogen", "Hydrogen Bromide", "Hydrogen Chloride", "Hydrogen Fluoride", "Isobutylene", "Krypton", "Methane", "Methyl Fluoride", "Molybdenum Hexafluoride", "Neon", "Nitric Oxide", "Nitrogen", "Nitrogen Dioxide", "Nitrogen Trifluoride", "Nitrous Oxide", "Octafluorocyclobutane", "Oxygen", "Pentane", "Perfluoropropane", "Phosgene", "Phosphine", "Propane", "Propylene", "Silane", "Silicon Tetrachloride", "Silicon Tetrafluoride", "Sulfur Dioxide", "Sulfur Hexafluoride", "Trichlorofluoromethane", "Trichlorosilane", "Tungsten Hexafluoride", "Xenon"], row = rows, column = col)
+                    self.addOptionBox("Gases" + str(self.gasCtr), ["- Gases -", 
+                    "- Commonly Used -", "Air", "Carbon Dioxide", "Helium", 
+                    "Hydrogen", "Nitrogen", "Oxygen", "-Commonly Used -",
+                    "Actylene", "Air", "Ammonia", "Argon", "Arsine", 
+                    "Boron Trichloride", "Bromine", "Carbon Dioxide", 
+                    "Carbon Monoxide", "Carbon Tetrachloride", 
+                    "Carbon Tetraflouride", "Chlorine", "Chlorodifluoromethane", 
+                    "Chloropentafluoromethane", "Cyanogen", "Deuterium", 
+                    "Diborane", "Dibromane", "Dibromodifluoromethane", 
+                    "Dichlorodifluoromethane", "Dichlorofluoromethane", 
+                    "Dichloromethysilane", "Dichlorosilane", 
+                    "Dichlorotetrafluoroethane", "Difluoroethylene", 
+                    "Dimethylpropane", "Ethane", "Fluorine", "Fluoroform", 
+                    "Freon - 11", "Freon - 12", "Freon - 13", "Freon - 14", 
+                    "Freon - 21", "Freon - 22", "Freon - 23", "Freon - 113", 
+                    "Freon - 114", "Freon - 115", "Freon - 116", "Freon - C318", 
+                    "Freon - 1132A", "Helium", "Hexafluoroethane", "Hydrogen", 
+                    "Hydrogen Bromide", "Hydrogen Chloride", "Hydrogen Fluoride", 
+                    "Isobutylene", "Krypton", "Methane", "Methyl Fluoride", 
+                    "Molybdenum Hexafluoride", "Neon", "Nitric Oxide", "Nitrogen", 
+                    "Nitrogen Dioxide", "Nitrogen Trifluoride", "Nitrous Oxide", 
+                    "Octafluorocyclobutane", "Oxygen", "Pentane", "Perfluoropropane", 
+                    "Phosgene", "Phosphine", "Propane", "Propylene", "Silane", 
+                    "Silicon Tetrachloride", "Silicon Tetrafluoride", "Sulfur Dioxide", 
+                    "Sulfur Hexafluoride", "Trichlorofluoromethane", "Trichlorosilane", 
+                    "Tungsten Hexafluoride", "Xenon"], row = rows, column = col)                    
                     self.gasCtrDict[i] = self.gasCtr
                     self.gasCtr += 1
+                    
+#                   Add Slave buttons
+                    if self.errflag == 0:
+                        portList = ["- Master -"]
+                        for j in range(1, 9):
+                            if j != i:
+                                portList.append("Port " + str(j))
+                        self.addNamedCheckBox(title = ("Slave"+str(i)), name = "Slave", row = rows+1, column = col-1)
+                        self.addLabel("M-name" + str(i), "Master Port:", row = rowRef[i]+1, column = col)
+                        self.addOptionBox("Master" + str(i), portList, row = rowRef[i]+1, column = col+1)
+                        self.addLabel(str(i), "Ratio:", row = rowRef[i]+1, column = col +2)
+                        self.addNumericEntry("Ratio" + str(i), row = rowRef[i]+1, column = col +3)
+                        self.setCheckBoxChangeFunction("Slave" + str(i), slaveFunc)
+                        self.slaveDict[i][3] = True
+
                 elif self.getCheckBox("Port " + str(i)) != True and self.myDict.get(i) == 1:
                     self.myDict[i] = 0
-                    if i % 2 == 1:
-                        col = 2
+                    
+                    if self.errflag == 1:
+                        if i % 2 == 1: col = 1
+                        else: col = 4
+                    else:
+                        if i % 2 == 1: col = 1
+                        else: col = 7
                     rows = rowRef[i]
-                    self.addLabel(str(self.gasCtr), "", row= rows, column = col)
+                    self.addLabel("gas ctr" + str(self.gasCtr), "", row= rows, column = col)
                     self.gasCtrDict[i] = None
                     self.gasCtr += 1
+
+                    self.slaveDict[i][3] = False
+                    removeSlaveDetails(i)
         
         def back(btn):
             if self.errflag == 0:
@@ -545,22 +635,47 @@ class Screen(aj.gui):
         
         # Initialize the widgets of the window
         self.removeAllWidgets()
-
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
-
-    
-        self.addLabel("title", "Select the Working MFCs", row = 0, column = 1, colspan=3)
-        self.addCheckBox("Port 1", row = 2, column = 1)
-        self.addCheckBox("Port 3", row = 3, column = 1)
-        self.addCheckBox("Port 5", row = 4, column = 1)
-        self.addCheckBox("Port 7", row = 5, column = 1)
-        self.addCheckBox("Port 2", row = 2, column = 3)
-        self.addCheckBox("Port 4", row = 3, column = 3)
-        self.addCheckBox("Port 6", row = 4, column = 3)
-        self.addCheckBox("Port 8", row = 5, column = 3)
-        self.addButton("Submit", push, row = 6, column = 2)
-        self.setButtonBg("Submit", "LimeGreen")
+        if self.errflag == 1:
+            self.addLabel("title", "Select the Working MFCs", row = 0, column = 1, colspan=3)
+            self.addCheckBox("Port 1", row = 2)
+            self.addCheckBox("Port 3", row = 4)
+            self.addCheckBox("Port 5", row = 6)
+            self.addCheckBox("Port 7", row = 8)
+            self.addCheckBox("Port 2", row = 2, column = 3)
+            self.addCheckBox("Port 4", row = 4, column = 3)
+            self.addCheckBox("Port 6", row = 6, column = 3)
+            self.addCheckBox("Port 8", row = 8, column = 3)
+            self.addButton("Submit", push, row = 10, colspan = 4)
+            self.setButtonBg("Submit", "LimeGreen")
+            self.addHorizontalSeparator(row = 1, column = 0, colspan = 4)
+            self.addHorizontalSeparator(row = 3, column = 0, colspan = 4)
+            self.addHorizontalSeparator(row = 5, column = 0, colspan = 4)
+            self.addHorizontalSeparator(row = 7, column = 0, colspan = 4)
+            self.addHorizontalSeparator(row = 9, column = 0, colspan = 4)
+            self.addVerticalSeparator(row = 1, column = 2, rowspan = 8)
+        else:
+            self.addLabel("title", "Select the Working MFCs", 
+                            row = 0, column = 1, colspan=11)
+            self.addCheckBox("Port 1", row = 2, column = 0)
+            self.addCheckBox("Port 3", row = 5, column = 0)
+            self.addCheckBox("Port 5", row = 8, column = 0)
+            self.addCheckBox("Port 7", row = 11, column = 0)
+            self.addCheckBox("Port 2", row = 2, column = 6)
+            self.addCheckBox("Port 4", row = 5, column = 6)
+            self.addCheckBox("Port 6", row = 8, column = 6)
+            self.addCheckBox("Port 8", row = 11, column = 6)
+            self.addButton("Submit", push, row = 12, colspan = 11 )
+            self.setButtonBg("Submit", "LimeGreen")
+            # for i in [1,2,3,4,7,8,9,10]:
+            #     for j in [2,3,5,6,8,9,11,12]:
+            #         self.addLabel("Placeholder" + str(i) +str(j), "     ", row = j, column = i)
+            self.addHorizontalSeparator(row = 4, column = 0, colspan = 10)
+            self.addHorizontalSeparator(row = 1, column = 0, colspan = 10)
+            self.addHorizontalSeparator(row = 7, column = 0, colspan = 10)
+            self.addHorizontalSeparator(row = 10, column = 0, colspan = 10)
+            self.addVerticalSeparator(row = 1, column = 5, rowspan = 11)
 
         for i in range(1,9):
             self.setCheckBoxChangeFunction("Port " + str(i), myLittleFunc)
@@ -743,9 +858,10 @@ class Screen(aj.gui):
                 self.data.setPressureBehaviorList(self.behavior, self.initialTime, stop, mag0, units0, mag1, units1, oscillations)
                 self.initialTime = stop
                 self.removeButton("Okay")
-                if self.initialTime == self.lengthEach:
+                if self.initialTime == int(self.lengthEach):
                     self.data.updateMaster()
                     self.addButton("Select MFCs", press)
+                    self.setButtonBg("Select MFCs", "LimeGreen")
                 else:
                     self.rowCtr += 1
                     self.colList.append(self.colCtr)
@@ -901,18 +1017,18 @@ class Screen(aj.gui):
             This function occurs when the user presses the "Okay" button after selecting the desired number and duration of cycles and
             serves the purpose of saving this data while advancing the user interface to the next page.
             """
-            self.cycles = self.getSpinBox("Number of Cycles")
-            self.lengthEach = self.getSpinBox("Duration of One Cycle (minutes)")
+            self.cycles = int(self.getSpinBox("Number of Cycles"))
+            self.lengthEach = int(self.getSpinBox("Duration of One Cycle (minutes)"))
             entry_bool = True
 
-            if self.cycles == '1' and self.lengthEach == '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycle for " + self.lengthEach + " minute?")
+            if self.cycles == 1 and self.lengthEach == 1:
+                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minute?")
                 self.saveSerial += 1
-            elif self.cycles != '1' and self.lengthEach == '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycles for " + self.lengthEach + " minute each?")
+            elif self.cycles != 1 and self.lengthEach == 1:
+                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycles for " + str(self.lengthEach) + " minute each?")
                 self.saveSerial += 1
-            elif self.cycles == '1' and self.lengthEach != '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycle for " + self.lengthEach + " minutes each?")
+            elif self.cycles == 1 and self.lengthEach != 1:
+                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minutes each?")
                 self.saveSerial += 1
 
             if entry_bool:
