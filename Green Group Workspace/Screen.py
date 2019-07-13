@@ -584,7 +584,7 @@ class Screen(aj.gui):
                     "Boron Trichloride", "Bromine", "Carbon Dioxide", 
                     "Carbon Monoxide", "Carbon Tetrachloride", 
                     "Carbon Tetraflouride", "Chlorine", "Chlorodifluoromethane", 
-                    "Chloropentafluoromethane", "Cyanogen", "Deuterium", 
+                    "Chloropentafluoroethane", "Cyanogen", "Deuterium", 
                     "Diborane", "Dibromane", "Dibromodifluoromethane", 
                     "Dichlorodifluoromethane", "Dichlorofluoromethane", 
                     "Dichloromethysilane", "Dichlorosilane", 
