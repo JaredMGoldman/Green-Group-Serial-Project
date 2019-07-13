@@ -360,9 +360,18 @@ class Screen(aj.gui):
             self.addLabel("l5"+ str(self.pressureSerial), "End Time: ", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             self.addSpinBoxRange("ET" + str(self.pressureSerial), int(self.initialTime), int(self.lengthEach),row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
+        
+        def periodGetter(btn):
+            end = int(self.getSpinBox("ET"+str(self.pressureSerial)))
+            duration = end - int(self.initialTime)
+            oscillations = int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
+            if oscillations is not None and duration != 0:
+                period = duration / oscillations
+                self.infoBox("Period", "The period of this configuration is " + str(period) + " minutes.")
         
         def periodic():
             """
@@ -383,6 +392,7 @@ class Screen(aj.gui):
             self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 1, 10000, row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             timeKeeper()
         
@@ -501,8 +511,9 @@ class Screen(aj.gui):
                             save_bool = False
                             self.warningBox("Invalid Entry", "Make sure that you have chosen a master and ratio for each slave.")
                         else:
-                            slaveDict[i][0], slaveDict[i][1] = master, ratio
-                            
+                            master = int(master[-1])
+                            self.slaveDict[i][0], self.slaveDict[i][1] = master, ratio
+
                     if save_bool:
                         self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
             if save_bool:
@@ -828,7 +839,7 @@ class Screen(aj.gui):
             stop = int(self.getSpinBox("ET" + str(self.pressureSerial)))
             mag1 = 0
             units1 = ""
-            oscillations = 0
+            oscillations = 1
             mag0 = self.getEntry("DFR" + str(self.pressureSerial)) 
             units0 = self.getOptionBox("Units" + str(self.pressureSerial))
             save_criteria = True
@@ -926,9 +937,18 @@ class Screen(aj.gui):
             self.addLabel("l5"+ str(self.pressureSerial), "End Time: ", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             self.addSpinBoxRange("ET" + str(self.pressureSerial), int(self.initialTime), int(self.lengthEach),row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
+        
+        def periodGetter(btn):
+            end = int(self.getSpinBox("ET"+str(self.pressureSerial)))
+            duration = end - int(self.initialTime)
+            oscillations = int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
+            if oscillations is not None and duration != 0:
+                period = duration / oscillations
+                self.infoBox("Period", "The period of this configuration is " + str(period) + " minutes.")
         
         def periodic():
             """
@@ -949,6 +969,7 @@ class Screen(aj.gui):
             self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 1, 10000, row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             timeKeeper()
         
@@ -1052,8 +1073,7 @@ class Screen(aj.gui):
         self.addButton("Okay", push, colspan = 2)
         self.setButtonBg("Okay", "LimeGreen")
 
-        
-        
+            
 
     def render1(self):
         """
