@@ -338,7 +338,7 @@ class Screen(aj.gui):
             if save_criteria:
                 self.pressureSerial += 1
                 self.initialTime = stop
-                self.data.setMFCBehaviorDict(
+                self.data.setMFCBehaviorList(
                     self.gasDict[self.gasIndex[self.iter]], self.gasIndex, 
                     self.behavior, self.initialTime, stop, mag0, units0, 
                     mag1, units1, oscillations)
@@ -347,19 +347,19 @@ class Screen(aj.gui):
                 self.addHorizontalSeparator(row = self.rowCtr, 
                     column = 0,colspan=8, colour="black",)
                 self.rowCtr += 1
-                if self.initialTime == self.lengthEach:
-                    try:
-                        self.iter += 1
-                        self.gasIndex[self.iter]  
-                        self.initialTime = 0
-                        newGasRow()
-                    except IndexError:
+                
+                if self.initialTime == int(self.lengthEach):
+                    self.iter += 1
+                    if self.iter == len(self.gasIndex):
                         self.rowCtr -= 4
                         self.data.updateMaster()
                         self.addButton("Start Experiment", heave, 
                         row = self.rowCtr, column = 8)
                     else:
+                        self.gasIndex[self.iter]  
+                        self.initialTime = 0
                         newGasRow()
+                        
         
         def flowSelecter():
             """
@@ -419,7 +419,7 @@ class Screen(aj.gui):
             self.addSpinBoxRange("ET"+str(self.pressureSerial), 
                 int(self.initialTime), int(self.lengthEach),
                 row = self.rowCtr, column = self.colCtr)
-            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
+            # self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
@@ -620,12 +620,13 @@ class Screen(aj.gui):
             
             if save_bool:
                 for i in range(1, 9):
-                    self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
-                    if self.myDict[i] == 1:
-                        self.gasIndex.append(i)
-                    self.data.setSlaveList(self.slaveDict[i][2], i,
-                                            self.slaveDict[i][0],
-                                            self.slaveDict[i][3])
+                    if self.gasCtrDict[i] is not None:
+                        self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
+                        if self.myDict[i] == 1 and not self.slaveDict[i][2]:
+                            self.gasIndex.append(i)
+                        self.data.setSlaveList(self.slaveDict[i][2], i,
+                                                self.slaveDict[i][0],
+                                                self.slaveDict[i][3])
                 if self.errflag == 1:
                     self.errflag = 0
                     self.finalDestination()
