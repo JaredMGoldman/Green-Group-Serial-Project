@@ -21,18 +21,25 @@ class Screen(aj.gui):
         self.colList = []               # Designed to find the length of the longest column in order to ensure that the horizontal 
                                         # separator is long enough
         
-        self.myDict = {1:0, 2:0, 3:0,4:0, 5:0, 6:0,7:0, 8:0}      
-                                         # A binary representation of wether or not there is a gas assigned to the numbered port.
-                  
+        self.myDict = {                 # A binary representation of wether or not there is a gas assigned to the numbered port.
+            1:0,2:0,3:0,4:0, 
+            5:0,6:0,7:0,8:0
+            }      
+                                             
         self.gasCtr = 0                 # Ensures that the gas selection menu widgets have unique titles   
 
-        self.gasDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}                 
-                                        # The final dictionary matching the MFC port number with the name of the gas assigned to it
+        self.gasDict = {                # The final dictionary matching the MFC port number with the name of the gas assigned to it 
+            1:None, 2:None,             
+            3:None, 4:None, 
+            5:None, 6:None, 
+            7:None, 8:None}                                         
 
-        self.gasCtrDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}             
-                                        # For internal use. Saves the self.gasCtr number for a "Gas" option box entry. May not be the 
-                                        # final number. self.gasDict saves the more useful information (final)
-        
+        self.gasCtrDict = {             # For internal use. Saves the self.gasCtr number for a "Gas" option box entry. May not be the 
+            1:None, 2:None,             # final number. self.gasDict saves the more useful information (final)
+            3:None, 4:None, 
+            5:None, 6:None, 
+            7:None, 8:None}             
+                                        
         self.gasIndex = []              # Stores the number of the ports that contain gases after confirmation
         
         self.iter = 0                   # Incrementing variable used in the gas behavior section to move through the final gasses 
@@ -48,19 +55,23 @@ class Screen(aj.gui):
 
         self.behavior = ""              # saves the type of behavior for internal and data saving applications
 
-        self.data = ctrl.Controller()
+        self.data = ctrl.Controller()   # creates the object that will store all of the relevent data    
 
-        self.slaveDict = {1:9, 2:9, 3:9, 4:9, 5:9, 6:9, 7:9, 8:9}
-
-    
-        self.saveSerial = 0
-
-        self.slaveDict= {1:[9,0.0, False, False], 2:[9,0.0, False, False], 
-                        3:[9,0.0, False, False], 4:[9,0.0, False, False], 
-                        5:[9,0.0, False, False], 6:[9,0.0, False, False], 
-                        7:[9,0.0, False, False], 8:[9,0.0, False, False]} 
+        self.slaveDict= {               # the dictionary of lists with keys coorresponding to port number
+            1:[9,0.0, False, False],    # [master port, ratio, isSlave, is key port active]
+            2:[9,0.0, False, False], 
+            3:[9,0.0, False, False], 
+            4:[9,0.0, False, False], 
+            5:[9,0.0, False, False], 
+            6:[9,0.0, False, False], 
+            7:[9,0.0, False, False], 
+            8:[9,0.0, False, False]} 
         
-        super().__init__(title=None, geom=None, handleArgs=True, language=None, startWindow=None, useTtk=False, useSettings=False, showIcon=True, **kwargs)
+        super().__init__(
+            title=None, geom=None, handleArgs=True, language=None, 
+            startWindow=None, useTtk=False, useSettings=False, 
+            showIcon=True, **kwargs
+            )
     
     def backstep(self):
 
@@ -74,21 +85,26 @@ class Screen(aj.gui):
         output: 
                 experimental screen
         
-        This function creates the display for the experimental screen including the labels for the pressure 
-        versus time and flow rate versus time graph, the two graphs themselves, and selector optionBoxs for 
-        the user to select the units they want to display the data in on the screen.
+        This function creates the display for the experimental screen 
+        including the labels for the pressure versus time and flow rate 
+        versus time graph, the two graphs themselves, and selector 
+        optionBoxs for the user to select the units they want to display 
+        the data in on the screen.
         """
         def reP(axes):
             """
             input:
-                    axes - a matplotlib axes figure object representing the graph of pressure versus time
+                    axes - a matplotlib axes figure object representing 
+                    the graph of pressure versus time
 
             output:
                     updated pressure versus time graph
 
-            This function should update the pressure versus time graph with data from the machine.
+            This function should update the pressure versus time graph 
+            with data from the machine.
             
-            * It will require a function call init that gathers the data from the machine (to be built in controller.) *
+            * It will require a function call init that gathers the *
+            *   data from the machine (to be built in controller.)  *
             """
 
             x = np.arange(0,10,0.1) #Filler code
@@ -101,14 +117,17 @@ class Screen(aj.gui):
         def reFC(axes):
             """
             input:
-                    axes - a matplotlib axes figure object representing the graph of flow rate versus time
+                    axes - a matplotlib axes figure object representing 
+                    the graph of flow rate versus time
 
             output:
                     none
 
-            This function updates the flow rate versus time graph with data from the machine.
+            This function updates the flow rate versus time graph with 
+            data from the machine.
             
-            * It will require a function call init that gathers the data from the machine (to be built in controller.) *
+            * It will require a function call init that gathers the *
+            *   data from the machine (to be built in controller.)  *
             """
 
             x = np.arange(0,10,0.1)
@@ -128,9 +147,11 @@ class Screen(aj.gui):
             output:
                     none
             
-            This function occurs when the units of pressure have been selected by the user from the "Pressure Units" optionBox object.
-            It will change the y-axis label on the pressure versus time graph and update the data input function in order to reflect 
-            the new units of pressure on the graph.
+            This function occurs when the units of pressure have been 
+            selected by the user from the "Pressure Units" optionBox 
+            object. It will change the y-axis label on the pressure 
+            versus time graph and update the data input function in 
+            order to reflect the new units of pressure on the graph.
             """
             self.units = self.getOptionBox("Pressure Units")
             axes0.set_ylabel("Pressure (" + str(self.units)+")")
@@ -144,8 +165,10 @@ class Screen(aj.gui):
             output:
                     none
             
-            This function occurs when the units of flow rate have been selected by the user from the "Flow Units" optionBox object.
-            It will change the y-axis label on the flow rate versus time graph and update the data input function in order to reflect 
+            This function occurs when the units of flow rate have been 
+            selected by the user from the "Flow Units" optionBox object.
+            It will change the y-axis label on the flow rate versus time 
+            graph and update the data input function in order to reflect 
             the new units of flow rate on the graph.
             """
             self.myRate = self.getOptionBox("Flow Units")
@@ -215,18 +238,22 @@ class Screen(aj.gui):
         output:
                 gas behvior selection screen
 
-        This function is designed to produce a generic approach to choosing the behavior of each gas controlled by the MFCs, given by
-        the previous page. The page will allow the user to select different behaviors for the individual gases within the time of one 
-        cycle (as given by self.lengthEach).
+        This function is designed to produce a generic approach to 
+        choosing the behavior of each gas controlled by the MFCs, given 
+        by the previous page. The page will allow the user to select 
+        different behaviors for the individual gases within the time 
+        of one cycle (as given by self.lengthEach).
         """
         def newGasRow():
             """
             input:
                     none
             output:
-                    new opportunity to select the flow rate behavior of a gas
+                    new opportunity to select the flow rate behavior of 
+                    a gas
 
-            This function is designed to allow the user to determine the behavior of a gas governed by an MFC.
+            This function is designed to allow the user to determine the 
+            behavior of a gas governed by an MFC.
             """
             self.colCtr = 0
             self.addLabel("l11" + str(self.pressureSerial), "Port " + str(self.gasIndex[self.iter]), row = self.rowCtr)
@@ -247,7 +274,8 @@ class Screen(aj.gui):
             output:
                     none
             
-            This function occurs when the "start experiment" button is clicked. It redirects the user to the experiment screen. 
+            This function occurs when the "start experiment" button is 
+            clicked. It redirects the user to the experiment screen. 
             """
             self.finalDestination()
             
@@ -257,14 +285,20 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    either creates a new opportunity for the user to select the desired gas behavior or creates a "start experiment button"
+                    either creates a new opportunity for the user to 
+                    select the desired gas behavior or creates a "start 
+                    experiment button"
 
-            This function is designed to determine the progess of the gas selection process.  If it is complete (i.e. there are no more gases
-            to determine the behavior of and the cycle time limit has been reached for the current gas,) the function will give the user the 
-            option to continue to the experiment display screen.
+            This function is designed to determine the progess of the gas
+            selection process.  If it is complete (i.e. there are no more 
+            gases to determine the behavior of and the cycle time limit 
+            has been reached for the current gas) the function will give 
+            the user the option to continue to the experiment display screen.
 
-            * Thought * I could redirect the user directly to the experimental screen without the need for them to interact. * Thought *
+            * Thought * I could redirect the user directly to the final * Thought * 
+            * Thought *  screen without the need for them to interact.  * Thought *
             """
+            # initialize variables used here to preserve backstep functionality
             stop = int(self.getSpinBox("ET" + str(self.pressureSerial)))
             mag1 = 0
             units1 = ""
@@ -273,7 +307,7 @@ class Screen(aj.gui):
             mag0 = self.getEntry("DFR" + str(self.pressureSerial)) 
             units0 = self.getOptionBox("Units" + str(self.pressureSerial))
             
-
+            # Save values to check validity
             if self.behavior == "Linear" or self.behavior == "Exponential":
                 mag1 = self.getEntry("'DFR" + str(self.pressureSerial)) 
                 units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
@@ -283,24 +317,35 @@ class Screen(aj.gui):
                 units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
                 oscillations =  int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
 
-            if mag0 == None or units0 == None or stop == 0:
+            # Check if user input is valid before saving local variables as instance variables
+            if mag0 == None or units0 == None or stop == 0 or mag1 == None or units1 == None:
                 save_criteria = False
-                self.warningBox("Invalid Entry", "Please make sure you have entered a value for pressure, units, and end time." )
-            elif (self.behavior == "Linear" or self.behavior == "Exponential" or self.behavior == "Periodic") and (mag1 == None or units1 == None):
+                self.warningBox("Invalid Entry",
+                     "Please make sure you have entered a value for flow rate, units, and end time." )
+            elif mag0 < 0 or mag1 < 0:
                 save_criteria = False
-                self.warningBox("Invalid Entry", "Please make sure you have entered a value for pressure and units." )
+                self.warningBox("Invalid Entry", 
+                    "Please make sure you have entered a value positive for flow rate." )
+            elif ((self.behavior == "Linear" or self.behavior == "Exponential" or 
+                self.behavior == "Periodic") and (mag1 == None or units1 == None)):
+                save_criteria = False
+                self.warningBox("Invalid Entry", 
+                    "Please make sure you have entered a value for flow rate and units." )
             elif self.behavior == "Periodic" and oscillations == 1 :
-                save_criteria = self.yesNoBox("Invalid Entry", "Are you sure you only want 1 oscillation?" )
-
-            self.saveSerial += 1
+                save_criteria = self.yesNoBox("Invalid Entry", 
+                    "Are you sure you only want 1 oscillation?" )
             
             if save_criteria:
                 self.pressureSerial += 1
                 self.initialTime = stop
-                self.data.setMFCBehaviorDict(self.gasDict[self.gasIndex[self.iter]], self.gasIndex, self.behavior, self.initialTime, stop, mag0, units0, mag1, units1, oscillations)
+                self.data.setMFCBehaviorDict(
+                    self.gasDict[self.gasIndex[self.iter]], self.gasIndex, 
+                    self.behavior, self.initialTime, stop, mag0, units0, 
+                    mag1, units1, oscillations)
                 self.removeButton("Okay")
                 self.rowCtr += 1
-                self.addHorizontalSeparator(row = self.rowCtr, column = 0,colspan=8, colour="black",)
+                self.addHorizontalSeparator(row = self.rowCtr, 
+                    column = 0,colspan=8, colour="black",)
                 self.rowCtr += 1
                 if self.initialTime == self.lengthEach:
                     try:
@@ -311,7 +356,8 @@ class Screen(aj.gui):
                     except IndexError:
                         self.rowCtr -= 4
                         self.data.updateMaster()
-                        self.addButton("Start Experiment", heave, row = self.rowCtr, column = 8)
+                        self.addButton("Start Experiment", heave, 
+                        row = self.rowCtr, column = 8)
                     else:
                         newGasRow()
         
@@ -322,12 +368,16 @@ class Screen(aj.gui):
             output:
                     place to enter flow rate and means of selecting units
             
-            This is a function of reused code, used to generate a way of collecting data on flow rate including magnitude and units.
+            This is a function of reused code, used to generate a way of 
+            collecting data on flow rate including magnitude and units.
             """
-            self.addNumericEntry("DFR" + str(self.pressureSerial), row = self.rowCtr, column=self.colCtr)
-            # self.addOptionBox("DFR" + str(self.pressureSerial) , [ "- Magnitude -", "1", "2", "5", "10", "100", "200", "500", "1000", "5000"],row = self.rowCtr,column = self.colCtr)
+            self.addNumericEntry("DFR" + str(self.pressureSerial), 
+                row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("Units" + str(self.pressureSerial), ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],row = self.rowCtr, column= self.colCtr)
+            self.addOptionBox("Units" + str(self.pressureSerial), 
+                ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],
+                row = self.rowCtr, column= self.colCtr)
+
             self.colCtr += 1
 
         def flowSelecter1():
@@ -337,13 +387,16 @@ class Screen(aj.gui):
             output:
                     place to enter flow rate and means of selecting units
             
-            This is a function of reused code, used to generate a way of collecting data on flow rate including magnitude and units.
+            This is a function of reused code, used to generate a way of 
+            collecting data on flow rate including magnitude and units.
             (duplicate needed to keep widget names unique)
             """
-            self.addNumericEntry("'DFR" + str(self.pressureSerial), row = self.rowCtr, column=self.colCtr)
-            # self.addOptionBox("'DFR" + str(self.pressureSerial) , [ "- Magnitude -", "1", "2", "5", "10", "100", "200", "500", "1000", "5000"],row = self.rowCtr,column = self.colCtr)
+            self.addNumericEntry("'DFR" + str(self.pressureSerial), 
+                row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("'Units" + str(self.pressureSerial), ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],row = self.rowCtr, column= self.colCtr)
+            self.addOptionBox("'Units" + str(self.pressureSerial), 
+                ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],
+                row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
         def timeKeeper():
@@ -353,46 +406,70 @@ class Screen(aj.gui):
             output:
                     start time and place to enter stop time for a behavior
             
-            This is a function of reused code, used to generate a way of collecting data on end time of a specific behavior.
+            This is a function of reused code, used to generate a way of 
+            collecting data on end time of a specific behavior.
             """
-            self.addLabel("l4"+ str(self.pressureSerial), "Start Time: "  + str(self.initialTime),row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l4"+ str(self.pressureSerial), 
+                "Start Time: "+str(self.initialTime),
+                row=self.rowCtr,column=self.colCtr)
             self.colCtr += 1
-            self.addLabel("l5"+ str(self.pressureSerial), "End Time: ", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l5"+ str(self.pressureSerial), 
+                "End Time: ", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addSpinBoxRange("ET" + str(self.pressureSerial), int(self.initialTime), int(self.lengthEach),row = self.rowCtr, column = self.colCtr)
+            self.addSpinBoxRange("ET"+str(self.pressureSerial), 
+                int(self.initialTime), int(self.lengthEach),
+                row = self.rowCtr, column = self.colCtr)
             self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
         
         def periodGetter(btn):
+            """
+            input:
+                    button click during runtime
+            output:
+                    inforBox with the period of an oscillation based on
+                    user input
+
+            This function responds to the changing of a value in either 
+            the End Time ("ET") spinBox or in the "Oscillation" spinBox 
+            """
             end = int(self.getSpinBox("ET"+str(self.pressureSerial)))
             duration = end - int(self.initialTime)
-            oscillations = int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
+            oscillations = int(self.getSpinBox(
+                "Oscillations"+str(self.pressureSerial)))
             if oscillations is not None and duration != 0:
                 period = duration / oscillations
-                self.infoBox("Period", "The period of this configuration is " + str(period) + " minutes.")
+                self.infoBox("Period", 
+                    "The period of this configuration is "+str(period)+" minutes.")
         
         def periodic():
             """
             input:
                     none
             output:
-                    means of entering data needed to perform periodic alteration of flow
+                    means of entering data needed to perform periodic 
+                    alteration of flow
             """
             self.colCtr = 2
-            self.addLabel("l1"+str(self.pressureSerial), "Minimum:",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+str(self.pressureSerial), "Minimum:",
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             flowSelecter()
-            self.addLabel("l2"+str(self.pressureSerial), text="Maximum:",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l2"+str(self.pressureSerial), text="Maximum:",
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             flowSelecter1()
             self.rowCtr += 1
             self.colCtr = 2
-            self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", 
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 1, 10000, row = self.rowCtr, column = self.colCtr)
-            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), periodGetter)
+            self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 
+                1, 10000, row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), 
+                periodGetter)
             self.colCtr += 1
             timeKeeper()
         
@@ -401,7 +478,8 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform exponential alteration of flow
+                    means of entering data needed to perform exponential 
+                    alteration of flow
             """
             linear()
 
@@ -410,13 +488,16 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform linear alteration of flow
+                    means of entering data needed to perform linear 
+                    alteration of flow
             """
             self.colCtr = 2
-            self.addLabel("l1"+str(self.pressureSerial), "Initial Flow Rate: ",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+str(self.pressureSerial), 
+                "Initial Flow Rate: ",row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             flowSelecter()
-            self.addLabel("l2"+str(self.pressureSerial),  "Final Flow Rate: ",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l2"+str(self.pressureSerial),  
+                "Final Flow Rate: ",row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             flowSelecter1()
             self.rowCtr += 1
@@ -429,10 +510,12 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform static alteration of flow
+                    means of entering data needed to perform static 
+                    alteration of flow
             """
             self.colCtr = 2
-            self.addLabel("l1"+ str(self.pressureSerial), "Desired Flow Rate:", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+ str(self.pressureSerial), 
+                "Desired Flow Rate:", row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             flowSelecter()
             self.rowCtr += 1
@@ -444,12 +527,16 @@ class Screen(aj.gui):
             input: 
                     none
             output:
-                    specified type of flow behavior, based on user input into optionBox
+                    specified type of flow behavior, based on user input 
+                    into optionBox
 
-            This function occurs in response to the user selecting a behavior entry from the option box and provides the 
-            cooresponding data entry interface for the user to interact with.
+            This function occurs in response to the user selecting a 
+            behavior entry from the option box and provides the 
+            cooresponding data entry interface for the user to interact 
+            with.
 
-            * TO DO * Enable user to change their mind and select a different option. * TO DO *
+            * TO DO * Enable user to change their mind and select a * TO DO *
+            * TO DO *             different option.                 * TO DO *
             """
             self.behavior = self.getOptionBox("TB" + str(self.pressureSerial))
             if self.behavior == "Static":
@@ -462,15 +549,23 @@ class Screen(aj.gui):
                 periodic()
 
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             self.render2fc1()
         
-        # Code for initializing the flow behavior selection screen #
+        # Code for initializing the flow behavior selection screen
         self.removeAllWidgets()
 
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
 
-        self.addLabel("l0","Please select the desired behavior for each of the gasses in turn", row = 0, column = 2)
+        self.addLabel("l0",
+            "Please select the desired behavior for each of the gasses in turn", 
+            row = 0, column = 2)
         self.rowCtr = 1
         self.pressureSerial = 0
         newGasRow()
@@ -482,11 +577,15 @@ class Screen(aj.gui):
         input:
                 none
         output:
-                array of check-boxes that allow user to choose which gases are loaded in MFC ports
+                array of check-boxes that allow user to choose which 
+                gases are loaded in MFC ports
 
-        This function allows the user to select the port and type of gas that the MFCs are connected to. This data is saved in 
+        This function allows the user to select the port and type of gas 
+        that the MFCs are connected to. This data is saved in 
         self.gasDict for later use.
         """
+        # initialize slave functionality variables
+        
         self.myDict = {1:0, 2:0, 3:0,4:0, 5:0, 6:0,7:0, 8:0}
         self.gasCtrDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}
         self.gasCtr = 0
@@ -504,12 +603,14 @@ class Screen(aj.gui):
                 if self.myDict[i] == 1:
                     if self.getOptionBox("Gases"+str(self.gasCtrDict[i])) == None:
                         save_bool = False
-                        self.warningBox("Invalid Entry", "Make sure that you have chosen a gas for each active port.")
+                        self.warningBox("Invalid Entry", 
+                            "Make sure that you have chosen a gas for each active port.")
                     if self.errflag == 0 and self.slaveDict[i][2]:
                         master, ratio = self.getOptionBox("Master"+str(i)), self.getEntry("Ratio" + str(i))
                         if master == None or ratio == None:
                             save_bool = False
-                            self.warningBox("Invalid Entry", "Make sure that you have chosen a master and ratio for each slave.")
+                            self.warningBox("Invalid Entry", 
+                                "Make sure that you have chosen a master and ratio for each slave.")
                         else:
                             master = int(master[-1])
                             self.slaveDict[i][0], self.slaveDict[i][1] = master, ratio
@@ -638,6 +739,12 @@ class Screen(aj.gui):
                     removeSlaveDetails(i)
         
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             if self.errflag == 0:
                 self.render2fc()
             else:
@@ -648,6 +755,8 @@ class Screen(aj.gui):
         self.removeAllWidgets()
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
+        
+        # The baseline widgets of a pressure-dependent setup
         if self.errflag == 1:
             self.addLabel("title", "Select the Working MFCs", row = 0, column = 1, colspan=3)
             self.addCheckBox("Port 1", row = 2)
@@ -660,15 +769,17 @@ class Screen(aj.gui):
             self.addCheckBox("Port 8", row = 8, column = 3)
             self.addButton("Submit", push, row = 10, colspan = 4)
             self.setButtonBg("Submit", "LimeGreen")
-            self.addHorizontalSeparator(row = 1, column = 0, colspan = 4)
-            self.addHorizontalSeparator(row = 3, column = 0, colspan = 4)
-            self.addHorizontalSeparator(row = 5, column = 0, colspan = 4)
-            self.addHorizontalSeparator(row = 7, column = 0, colspan = 4)
-            self.addHorizontalSeparator(row = 9, column = 0, colspan = 4)
+            self.addHorizontalSeparator(row = 1, column = 0, colspan = 8)
+            self.addHorizontalSeparator(row = 3, column = 0, colspan = 8)
+            self.addHorizontalSeparator(row = 5, column = 0, colspan = 8)
+            self.addHorizontalSeparator(row = 7, column = 0, colspan = 8)
+            self.addHorizontalSeparator(row = 9, column = 0, colspan = 8)
             self.addVerticalSeparator(row = 1, column = 2, rowspan = 8)
+        
+        # baseline widgets for a flow rate dependent setup
         else:
             self.addLabel("title", "Select the Working MFCs", 
-                            row = 0, column = 1, colspan=11)
+                row = 0, column = 1, colspan=11)
             self.addCheckBox("Port 1", row = 2, column = 0)
             self.addCheckBox("Port 3", row = 5, column = 0)
             self.addCheckBox("Port 5", row = 8, column = 0)
@@ -679,9 +790,6 @@ class Screen(aj.gui):
             self.addCheckBox("Port 8", row = 11, column = 6)
             self.addButton("Submit", push, row = 12, colspan = 11 )
             self.setButtonBg("Submit", "LimeGreen")
-            # for i in [1,2,3,4,7,8,9,10]:
-            #     for j in [2,3,5,6,8,9,11,12]:
-            #         self.addLabel("Placeholder" + str(i) +str(j), "     ", row = j, column = i)
             self.addHorizontalSeparator(row = 4, column = 0, colspan = 10)
             self.addHorizontalSeparator(row = 1, column = 0, colspan = 10)
             self.addHorizontalSeparator(row = 7, column = 0, colspan = 10)
@@ -711,39 +819,46 @@ class Screen(aj.gui):
             output:
                     moves to MFC port + gas selection screen
             
-            This function serves the primary purpose of saving the cycle data while also advancing the user interface to the next page.
+            This function serves the primary purpose of saving the cycle 
+            data while also advancing the user interface to the next page.
             """
             self.cycles = self.getSpinBox("Number of Cycles")
             self.lengthEach = self.getSpinBox("Duration of One Cycle (minutes)")
             entry_bool = True
 
             if self.cycles == '1' and self.lengthEach == '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycle for " + self.lengthEach + " minute?")
-                self.saveSerial += 1
+                entry_bool = self.yesNoBox("Consider Revising", 
+                    "Are you sure you want "+self.cycles+" cycle for "+self.lengthEach+" minute?")
             elif self.cycles != '1' and self.lengthEach == '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycles for " + self.lengthEach + " minute each?")
-                self.saveSerial += 1
+                entry_bool = self.yesNoBox("Consider Revising", 
+                    "Are you sure you want "+self.cycles+" cycles for "+self.lengthEach+" minute each?")
             elif self.cycles == '1' and self.lengthEach != '1':
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + self.cycles + " cycle for " + self.lengthEach + " minutes each?")
-                self.saveSerial += 1
+                entry_bool=self.yesNoBox("Consider Revising", 
+                "Are you sure you want "+self.cycles+" cycle for "+self.lengthEach+" minutes each?")
 
             if entry_bool:
                 self.render2fc1()
-            
-        
-        
+
         self.removeAllWidgets()
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             self.render1()
 
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
 
-        self.addLabel("Select the number of cycles and the duration of each one.", row = 0, column = 1)
+        self.addLabel("Select the number of cycles and the duration of each one.", 
+            row = 0, column = 1)
         self.addLabel("", "Number of Cycles")
         self.addSpinBoxRange("Number of Cycles",1,100, row = 1, column= 1)
         self.addLabel("1", "Duration of one Cycle (minutes")
-        self.addSpinBoxRange("Duration of One Cycle (minutes)",1, 100, row = 2, column = 1)
+        self.addSpinBoxRange("Duration of One Cycle (minutes)",1, 100, 
+            row = 2, column = 1)
         self.addButton("Okay", push, colspan = 2)
         self.setButtonBg("Okay", "LimeGreen")
 
@@ -827,15 +942,20 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    either creates a new opportunity for the user to select the desired gas behavior or creates a "start experiment button"
+                    either creates a new opportunity for the user to 
+                    select the desired gas behavior or creates a "start 
+                    experiment button"
 
-            This function is designed to determine the progess of the gas selection process.  If it is complete (i.e. there are no more gases
-            to determine the behavior of and the cycle time limit has been reached for the current gas,) the function will give the user the 
-            option to continue to the experiment display screen.
+            This function is designed to determine the progess of the gas
+            selection process.  If it is complete (i.e. there are no more 
+            gases to determine the behavior of and the cycle time limit 
+            has been reached for the current gas) the function will give 
+            the user the option to continue to the experiment display screen.
 
-            * Thought * I could redirect the user directly to the experimental screen without the need for them to interact. * Thought *
+            * Thought * I could redirect the user directly to the final * Thought * 
+            * Thought *  screen without the need for them to interact.  * Thought *
             """
-            
+            # initializes variable in order to enable backstep functionality
             stop = int(self.getSpinBox("ET" + str(self.pressureSerial)))
             mag1 = 0
             units1 = ""
@@ -845,28 +965,37 @@ class Screen(aj.gui):
             save_criteria = True
 
             if self.behavior == "Linear" or self.behavior == "Exponential":
-                mag1 = self.getEntry("'DFR" + str(self.pressureSerial)) 
-                units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
+                mag1=self.getEntry("'DFR"+str(self.pressureSerial)) 
+                units1=self.getOptionBox("'Units"+str(self.pressureSerial))
 
             elif self.behavior == "Periodic":
-                mag1 = self.getEntry("'DFR" + str(self.pressureSerial)) 
-                units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
-                oscillations =  int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
-
+                mag1=self.getEntry("'DFR" + str(self.pressureSerial)) 
+                units1=self.getOptionBox("'Units" + str(self.pressureSerial))
+                oscillations=int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
+            
+            # Checks possible user errors
             if mag0 == None or units0 == None or stop == 0:
                 save_criteria = False
-                self.warningBox("Invalid Entry", "Please make sure you have entered a value for pressure, units, and end time." )
+                self.warningBox("Invalid Entry",
+                     "Please make sure you have entered a value for pressure, units, and end time." )
+            elif mag0 < 0 or mag1 < 0:
+                save_criteria = False
+                self.warningBox("Invalid Entry", 
+                    "Please make sure you have entered a value positive for pressure." )
             elif (self.behavior == "Linear" or self.behavior == "Exponential" or self.behavior == "Periodic") and (mag1 == None or units1 == None):
                 save_criteria = False
-                self.warningBox("Invalid Entry", "Please make sure you have entered a value for pressure and units." )
+                self.warningBox("Invalid Entry", 
+                    "Please make sure you have entered a value for pressure and units." )
             elif self.behavior == "Periodic" and oscillations == 1 :
-                save_criteria = self.yesNoBox("Consider Revising", "Are you sure you only want 1 oscillation?" )
-                
-            self.saveSerial += 1
+                save_criteria = self.yesNoBox("Consider Revising", 
+                    "Are you sure you only want 1 oscillation?" )
 
+            # Test passed
             if save_criteria:
                 self.pressureSerial += 1
-                self.data.setPressureBehaviorList(self.behavior, self.initialTime, stop, mag0, units0, mag1, units1, oscillations)
+                self.data.setPressureBehaviorList(self.behavior, 
+                    self.initialTime, stop, mag0, units0, mag1, 
+                    units1, oscillations)
                 self.initialTime = stop
                 self.removeButton("Okay")
                 if self.initialTime == int(self.lengthEach):
@@ -876,11 +1005,18 @@ class Screen(aj.gui):
                 else:
                     self.rowCtr += 1
                     self.colList.append(self.colCtr)
-                    self.addHorizontalSeparator(self.rowCtr,0,str(max(self.colList)), colour="black")
+                    self.addHorizontalSeparator(self.rowCtr,0,
+                        str(max(self.colList)), colour="black")
                     self.rowCtr += 1
                     newRow()
 
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             self.render2p()
         
         self.removeAllWidgets()
@@ -899,12 +1035,17 @@ class Screen(aj.gui):
             output:
                     place to enter pressure and means of selecting units
             
-            This is a function of reused code, used to generate a way of collecting data on pressure including magnitude and units.
+            This is a function of reused code, used to generate a way of 
+            collecting data on pressure including magnitude and units.
             """
-            # self.addOptionBox("DFR" + str(self.pressureSerial) , [ "- Magnitude -", "1", "2", "5", "10", "100", "200", "500", "1000", "5000"],row = self.rowCtr,column = self.colCtr)
-            self.addNumericEntry("DFR" + str(self.pressureSerial),row = self.rowCtr, column = self.colCtr)
+            self.addNumericEntry("DFR" + str(self.pressureSerial),
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("Units" + str(self.pressureSerial), ["- Units -", "mTorr", "Torr", "kTorr", "\u03BC"+"Bar", "mBar", "Bar", "Pa", "kPa", "Mpa","\u03BC"+"bar", "mbar", "bar"],row = self.rowCtr, column= self.colCtr)
+            self.addOptionBox("Units" + str(self.pressureSerial), 
+                ["- Units -", "mTorr", "Torr", "kTorr", 
+                "\u03BC"+"Bar", "mBar", "Bar", "Pa", "kPa", 
+                "Mpa","\u03BC"+"bar", "mbar", "bar"],
+                row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
         def pressureSelecter1():
@@ -914,13 +1055,18 @@ class Screen(aj.gui):
             output:
                     place to enter pressure and means of selecting units
             
-            This is a function of reused code, used to generate a way of collecting data on pressure including magnitude and units.
+            This is a function of reused code, used to generate a way of 
+            collecting data on pressure including magnitude and units.
             (duplicate needed to keep widget names unique)
             """
-            # self.addOptionBox("'DFR" + str(self.pressureSerial) , [ "- Magnitude -", "1", "2", "5", "10", "100", "200", "500", "1000", "5000"],row = self.rowCtr,column = self.colCtr)
-            self.addNumericEntry("'DFR" + str(self.pressureSerial),row = self.rowCtr, column = self.colCtr)
+            self.addNumericEntry("'DFR" + str(self.pressureSerial),
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("'Units" + str(self.pressureSerial), ["- Units -", "mTorr", "Torr", "kTorr", "\u03BC"+"Bar", "mBar", "Bar", "Pa", "kPa", "Mpa","\u03BC"+"bar", "mbar", "bar"],row = self.rowCtr, column= self.colCtr)
+            self.addOptionBox("'Units" + str(self.pressureSerial), 
+                ["- Units -", "mTorr", "Torr", "kTorr", 
+                "\u03BC"+"Bar","mBar", "Bar", "Pa", "kPa", "Mpa",
+                "\u03BC"+"bar", "mbar", "bar"],row = self.rowCtr, 
+                column= self.colCtr)
             self.colCtr += 1
 
         def timeKeeper():
@@ -930,46 +1076,70 @@ class Screen(aj.gui):
             output:
                     start time and place to enter stop time for a behavior
             
-            This is a function of reused code, used to generate a way of collecting data on end time of a specific behavior.
+            This is a function of reused code, used to generate a way of 
+            collecting data on end time of a specific behavior.
             """
-            self.addLabel("l4"+ str(self.pressureSerial), "Start Time: "  + str(self.initialTime),row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l4"+ str(self.pressureSerial), 
+                "Start Time: "  + str(self.initialTime),row = self.rowCtr, 
+                column = self.colCtr)
             self.colCtr += 1
-            self.addLabel("l5"+ str(self.pressureSerial), "End Time: ", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l5"+ str(self.pressureSerial), "End Time: ", 
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addSpinBoxRange("ET" + str(self.pressureSerial), int(self.initialTime), int(self.lengthEach),row = self.rowCtr, column = self.colCtr)
-            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
+            self.addSpinBoxRange("ET" + str(self.pressureSerial), 
+                int(self.initialTime), int(self.lengthEach),row = self.rowCtr, 
+                column = self.colCtr)
+            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), 
+                periodGetter)
             self.colCtr += 1
-            self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
+            self.addButton("Okay",bigPush,row=self.rowCtr,column=self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
         
         def periodGetter(btn):
+            """
+            input:
+                    button click during runtime
+            output:
+                    inforBox with the period of an oscillation based on
+                    user input
+
+            This function responds to the changing of a value in either 
+            the End Time ("ET") spinBox or in the "Oscillation" spinBox 
+            """
             end = int(self.getSpinBox("ET"+str(self.pressureSerial)))
             duration = end - int(self.initialTime)
-            oscillations = int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
+            oscillations=int(self.getSpinBox("Oscillations"+str(self.pressureSerial)))
             if oscillations is not None and duration != 0:
                 period = duration / oscillations
-                self.infoBox("Period", "The period of this configuration is " + str(period) + " minutes.")
+                self.infoBox("Period",
+                    "The period of this configuration is "+str(period)+" minutes.")
         
         def periodic():
             """
             input:
                     none
             output:
-                    means of entering data needed to perform periodic alteration of pressure
+                    means of entering data needed to perform periodic 
+                    alteration of pressure
             """
             self.colCtr = 0
-            self.addLabel("l1"+str(self.pressureSerial), "Minimum:",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+str(self.pressureSerial), "Minimum:",
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             pressureSelecter()
-            self.addLabel("l2"+str(self.pressureSerial), text="Maximum:",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l2"+str(self.pressureSerial),"Maximum:",
+            row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             pressureSelecter1()
             self.rowCtr += 1
             self.colCtr = 0
-            self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l3"+str(self.pressureSerial),"Number of Oscillations:", 
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 1, 10000, row = self.rowCtr, column = self.colCtr)
-            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), periodGetter)
+            self.addSpinBoxRange("Oscillations" + str(self.pressureSerial), 
+                1, 10000, row = self.rowCtr, column = self.colCtr)
+            self.setSpinBoxChangeFunction("Oscillations" + str(self.pressureSerial), 
+                periodGetter)
             self.colCtr += 1
             timeKeeper()
         
@@ -978,7 +1148,8 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform exponential alteration of pressure
+                    means of entering data needed to perform exponential 
+                    alteration of pressure
             """
             linear()
 
@@ -987,13 +1158,16 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform linear alteration of pressure
+                    means of entering data needed to perform linear 
+                    alteration of pressure
             """
             self.colCtr = 0
-            self.addLabel("l1"+str(self.pressureSerial), "Initial Pressure: ",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+str(self.pressureSerial), "Initial Pressure: ",
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             pressureSelecter()
-            self.addLabel("l2"+str(self.pressureSerial),  "Final Pressure: ",row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l2"+str(self.pressureSerial),  "Final Pressure: ",
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             pressureSelecter1()
             self.rowCtr += 1
@@ -1006,10 +1180,12 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    means of entering data needed to perform static alteration of pressure
+                    means of entering data needed to perform static alteration 
+                    of pressure
             """
             self.colCtr = 0
-            self.addLabel("l1"+ str(self.pressureSerial), "Desired Pressure:", row = self.rowCtr, column = self.colCtr)
+            self.addLabel("l1"+ str(self.pressureSerial), "Desired Pressure:", 
+                row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             pressureSelecter()
             self.rowCtr += 1
@@ -1025,8 +1201,9 @@ class Screen(aj.gui):
         output:
                 cycle info selection page for pressure dependent experiment
 
-        This function creates the screen in which the user can enter the data about the number of cycles and the time of each cycle.
-        This data is saved as self.cycles and self.lengthEach, respectively.
+        This function creates the screen in which the user can enter the 
+        data about the number of cycles and the time of each cycle.  This 
+        data is saved as self.cycles and self.lengthEach, respectively.
         """
         def push(btn):
             """
@@ -1035,28 +1212,39 @@ class Screen(aj.gui):
             output:
                     moves to pressure behavior screen
             
-            This function occurs when the user presses the "Okay" button after selecting the desired number and duration of cycles and
-            serves the purpose of saving this data while advancing the user interface to the next page.
+            This function occurs when the user presses the "Okay" button 
+            after selecting the desired number and duration of cycles and
+            serves the purpose of saving this data while advancing the user 
+            interface to the next page.
             """
             self.cycles = int(self.getSpinBox("Number of Cycles"))
             self.lengthEach = int(self.getSpinBox("Duration of One Cycle (minutes)"))
             entry_bool = True
 
             if self.cycles == 1 and self.lengthEach == 1:
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minute?")
-                self.saveSerial += 1
+                entry_bool = self.yesNoBox("Consider Revising", 
+                    "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minute?")
+
             elif self.cycles != 1 and self.lengthEach == 1:
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycles for " + str(self.lengthEach) + " minute each?")
-                self.saveSerial += 1
+                entry_bool = self.yesNoBox("Consider Revising", 
+                    "Are you sure you want " + str(self.cycles) + " cycles for " + str(self.lengthEach) + " minute each?")
+
             elif self.cycles == 1 and self.lengthEach != 1:
-                entry_bool = self.yesNoBox("Consider Revising", "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minutes each?")
-                self.saveSerial += 1
+                entry_bool = self.yesNoBox("Consider Revising", 
+                    "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minutes each?")
+
 
             if entry_bool:
                 self.removeAllWidgets(current = False)
                 self.render2p1()
             
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             self.render1()
         
         # Cycle information input initialization
@@ -1065,11 +1253,13 @@ class Screen(aj.gui):
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
 
-        self.addLabel("Select the number of cycles and the duration of each one.", row = 0, column = 1)
+        self.addLabel("Select the number of cycles and the duration of each one.", 
+            row = 0, column = 1)
         self.addLabel("", "Number of Cycles")
         self.addSpinBoxRange("Number of Cycles",1,100, row = 1, column= 1)
         self.addLabel("1", "Duration of one Cycle (minutes")
-        self.addSpinBoxRange("Duration of One Cycle (minutes)",1, 100, row = 2, column = 1)
+        self.addSpinBoxRange("Duration of One Cycle (minutes)",1, 100, 
+            row = 2, column = 1)
         self.addButton("Okay", push, colspan = 2)
         self.setButtonBg("Okay", "LimeGreen")
 
@@ -1080,9 +1270,11 @@ class Screen(aj.gui):
         input:
                 none
         output:
-                depending on the user's selection of experiment type, the output will vary
+                depending on the user's selection of experiment type, the 
+                output will vary
 
-        This function is designed to provide the user with an interface with which to select the type of experiment they are performing,
+        This function is designed to provide the user with an interface 
+        with which to select the type of experiment they are performing,
         whether it is dependent upon pressure or flow rate.
         """
         self.data.setPressureCtrlBoolean(False)
@@ -1094,7 +1286,8 @@ class Screen(aj.gui):
             output:
                     the user's selection of experiment
 
-            This function is designed to provide the user with an interface with which to select the type of experiment they are performing,
+            This function is designed to provide the user with an interface 
+            with which to select the type of experiment they are performing,
             whether it is dependent upon pressure or flow rate. 
             """
             selection = self.getRadioButton("options")
@@ -1106,6 +1299,12 @@ class Screen(aj.gui):
                 self.render2fc()
         
         def back(btn):
+            """
+            input:
+                    user clicks back arrow
+            output:
+                    previous page
+            """
             self.removeAllWidgets()
             self.render0()
         
@@ -1114,7 +1313,9 @@ class Screen(aj.gui):
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
 
-        self.addLabel("title", "What is the independent variable in this experiment", row = 0, column = 1)
+        self.addLabel("title", 
+            "What is the independent variable in this experiment", 
+            row = 0, column = 1)
         self.addRadioButton("options", "Pressure", colspan= 2)
         self.addRadioButton("options", "Flow Rate", colspan = 2)
         self.addButton("Select", press, colspan = 2)
@@ -1127,10 +1328,12 @@ class Screen(aj.gui):
         output:
                 interface for user to select a saved experimental setup
 
-        This function is designed to give the user a place to submit a previously used experimental setup and avoid the hassel of 
+        This function is designed to give the user a place to submit a 
+        previously used experimental setup and avoid the hassel of 
         creating a custom experiment every time they use this program.
 
-        This section is seperate, as the removal of a fileEntry widget proved challenging. 
+        This section is seperate, as the removal of a fileEntry widget 
+        proved challenging. 
         """
         def heave(btn):
             """
@@ -1139,10 +1342,12 @@ class Screen(aj.gui):
             output:
                     experiment interface
             
-            This function occurs after the user selects the "Start Experiment" button.  This function is designed to redirect the user
-            to the experiment interface.
+            This function occurs after the user selects the 
+            "Start Experiment" button.  This function is designed to 
+            redirect the user to the experiment interface.
 
-            The errflag is set to 1 to denote that the gui object require careful handling as it will have a fileEntry widget which I
+            The errflag is set to 1 to denote that the gui object require 
+            careful handling as it will have a fileEntry widget which I
             do not know how to remove.
             """
             self.errflag = 1
@@ -1151,7 +1356,8 @@ class Screen(aj.gui):
         
         self.removeAllWidgets()
 
-        self.addLabel("tit", "Select The Experimental Setup", row = 0, column = 1)
+        self.addLabel("tit", "Select The Experimental Setup", row = 0, 
+            column = 1)
         self.addLabel("", "Saved Experiment", row = 1, column = 0)
         entry = self.addFileEntry("Saved Experiment", row = 1, column = 1)
         self.addButton("Start Experiment", heave, row = 2, column = 0)
@@ -1165,11 +1371,14 @@ class Screen(aj.gui):
         input:
                 none
         output:
-                depending on the user's selection of experiment type, the output will vary
+                depending on the user's selection of experiment type, the 
+                output will vary
 
-        This function is designed to provide the user with an interface with which to select the type of experiment they are performing.
+        This function is designed to provide the user with an interface 
+        with which to select the type of experiment they are performing.
         
-        The choice is between a custom and saved experiment with custom experiments being created piece by piece and saved experiments 
+        The choice is between a custom and saved experiment with custom 
+        experiments being created piece by piece and saved experiments 
         accessed though a file saved on the computer.
         """
         def press(btn):
@@ -1177,11 +1386,14 @@ class Screen(aj.gui):
             input:
                     none
             output:
-                    depending on the user's selection of experiment type, the output will vary
+                    depending on the user's selection of experiment type, 
+                    the output will vary
 
-            This function is designed to provide the user with an interface with which to select the type of experiment they are performing.
+            This function is designed to provide the user with an interface 
+            with which to select the type of experiment they are performing.
             
-            The choice is between a custom and saved experiment with custom experiments being created piece by piece and saved experiments 
+            The choice is between a custom and saved experiment with custom 
+            experiments being created piece by piece and saved experiments 
             accessed though a file saved on the computer.
             """
             selection = self.getRadioButton("option")
@@ -1196,11 +1408,17 @@ class Screen(aj.gui):
         self.setFont(size = 24, family = "Times")
         
         # Initial page setup
-        self.addLabel("title", "Welcome to the Experimental Setup Menu")
-        self.addLabel("subtitle", "Please select the experiment you wish to perform.")
-        self.addRadioButton("option", "Custom Experiment")
-        self.addRadioButton("option", "Saved Experiment")
-        self.addButton("Start", press)
-        self.setButtonBg("Start", "LimeGreen")
+        self.addLabel("title", 
+            "Welcome to the Experimental Setup Menu")
+        self.addLabel("subtitle", 
+            "Please select the experiment you wish to perform.")
+        self.addRadioButton("option", 
+            "Custom Experiment")
+        self.addRadioButton("option", 
+            "Saved Experiment")
+        self.addButton("Start", 
+            press)
+        self.setButtonBg("Start", 
+            "LimeGreen")
         
         self.go()
