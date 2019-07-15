@@ -325,7 +325,7 @@ class Screen(aj.gui):
             elif mag0 < 0 or mag1 < 0:
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
-                    "Please make sure you have entered a value positive for flow rate." )
+                    "Please make sure you have entered a positive value for flow rate." )
             elif ((self.behavior == "Linear" or self.behavior == "Exponential" or 
                 self.behavior == "Periodic") and (mag1 == None or units1 == None)):
                 save_criteria = False
@@ -981,7 +981,7 @@ class Screen(aj.gui):
             elif mag0 < 0 or mag1 < 0:
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
-                    "Please make sure you have entered a value positive for pressure." )
+                    "Please make sure you have entered a positive value for pressure." )
             elif (self.behavior == "Linear" or self.behavior == "Exponential" or self.behavior == "Periodic") and (mag1 == None or units1 == None):
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
