@@ -584,7 +584,7 @@ class Screen(aj.gui):
         that the MFCs are connected to. This data is saved in 
         self.gasDict for later use.
         """
-        # initialize slave functionality variables
+        # initialize backspace functionality variables
         
         self.myDict = {1:0, 2:0, 3:0,4:0, 5:0, 6:0,7:0, 8:0}
         self.gasCtrDict = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None}
@@ -600,11 +600,13 @@ class Screen(aj.gui):
         def push():
             save_bool = True
             for i in range(1,9):
+                
                 if self.myDict[i] == 1:
                     if self.getOptionBox("Gases"+str(self.gasCtrDict[i])) == None:
                         save_bool = False
                         self.warningBox("Invalid Entry", 
                             "Make sure that you have chosen a gas for each active port.")
+                    
                     if self.errflag == 0 and self.slaveDict[i][2]:
                         master, ratio = self.getOptionBox("Master"+str(i)), self.getEntry("Ratio" + str(i))
                         if master == None or ratio == None:
@@ -615,12 +617,15 @@ class Screen(aj.gui):
                             master = int(master[-1])
                             self.slaveDict[i][0], self.slaveDict[i][1] = master, ratio
 
-                    if save_bool:
-                        self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
+            
             if save_bool:
                 for i in range(1, 9):
+                    self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
                     if self.myDict[i] == 1:
                         self.gasIndex.append(i)
+                    self.data.setSlaveList(self.slaveDict[i][2], i,
+                                            self.slaveDict[i][0],
+                                            self.slaveDict[i][3])
                 if self.errflag == 1:
                     self.errflag = 0
                     self.finalDestination()

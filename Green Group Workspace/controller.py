@@ -18,6 +18,8 @@ class Controller:
         
         self.masterDict = {}
 
+        self.slaveBehaviorList = []
+
         self.correctionKey = {
                     "Actylene": 0.58, "Air": 1.00, "Ammonia": 0.73, 
                     "Argon": 1.39, "Arsine": 0.67, "Boron Trichloride": 0.41, 
@@ -52,7 +54,9 @@ class Controller:
                     "Tungsten Hexafluoride":0.25, "Xenon":1.32}
 
     def updateMaster(self):
-        self.masterDict = {0:self.cycle, 1:self.cycleLength, 2: self.MFCBehaviorDict, 3:self.pressureCtrlBool, 4:self.pressureBehaviorList}
+        self.masterDict = {0:self.cycle, 1:self.cycleLength, 
+            2: self.MFCBehaviorDict, 3:self.pressureCtrlBool, 
+            4:self.pressureBehaviorList,5:self.slaveBehviorList}
     
     def setNumberofCycles(self, cycle):
         self.cycle = cycle
@@ -62,11 +66,16 @@ class Controller:
         self.cycleLength = duration
         self.updateMaster()
 
-    def setMFCBehaviorDict(self, gas, port, behavior, start_time, end_time, magnitude0, units0, magnitude1, units1, oscillations):
+    def setMFCBehaviorDict( self, gas, port, behavior, start_time, 
+                            end_time, magnitude0, units0, magnitude1, 
+                            units1, oscillations
+                        ):
         sample = []
         if type(self.MFCBehaviorDict[(gas, port)]) != list:
             self.MFCBehaviorDict[(gas, port)] = sample
-        self.MFCBehaviorDict[(gas, port)].append([[behavior, start_time, end_time, magnitude0, units0, magnitude1, units1, oscillations]])
+        self.MFCBehaviorDict[(gas, port)].append([[behavior, 
+            start_time, end_time, magnitude0, units0, 
+            magnitude1, units1, oscillations]])
 
     def setPressureCtrlBoolean(self, my_bool):
         self.pressureCtrlBool = my_bool
@@ -76,9 +85,16 @@ class Controller:
             self.pressureBehaviorList = list()
         self.updateMaster()
 
-    def setPressureBehaviorList(self, behavior, start_time, end_time, magnitude0, units0, magnitude1, units1, oscillations):
-        self.pressureBehaviorList.append([[behavior, start_time, end_time, magnitude0, units0, magnitude1, units1, oscillations]])
+    def setPressureBehaviorList(self, behavior, start_time, end_time, 
+                                magnitude0, units0, magnitude1, 
+                                units1, oscillations):
+        self.pressureBehaviorList.append([[behavior, start_time, 
+            end_time, magnitude0, units0, magnitude1, units1, 
+            oscillations]])
 
-
+    def setSlaveList(self, slave_bool, port_id, master_id, ratio):
+        self.slaveBehaviorList.append([slave_bool, port_id, master_id, ratio])
+        self.updateMaster()
+    
     def beginExperiment(self):
         print("Big Work")
