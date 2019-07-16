@@ -216,6 +216,20 @@
 # # self.setStretch("column")
 # # # self.setSticky("sew")
 
-myList = [[1,2,3], [4,5,6]]
+import pickle as p
 
-print(len(myList))
+myList = [[1,2,3], [4,5,6], ['Blue', 'cheese', 10.0, [1,2,'three']]]
+myList.append([1,2,3])
+
+# with open('listfile.data', 'wb') as filehandle:  
+#     # store the data as binary data stream
+#     p.dump(myList, filehandle)
+
+# with open('listfile.data', 'rb') as filehandle:  
+#     # read the data as binary data stream
+#     myListReloaded = p.load(filehandle)
+
+print(myList)
+
+
+

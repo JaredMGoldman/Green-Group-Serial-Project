@@ -1,36 +1,35 @@
 import appJar as aj
+import pickle
 
 class Controller:
-    def __init__(self):
-        self.behaviorTypeDict = {
-                    "Static" : 0, "Linear":1, 
-                    "Exponential":2, "Periodic":3
-                    }
-        
-        self.behaviorInfoDict = {
+    def __init__(self, pressure_bool):
+        self.__behaviorTypeDict = {
+                        "Static" : 0, "Linear":1, 
+                        "Exponential":2, "Periodic":3
+                        }
+            
+        self.__behaviorInfoDict = {
                     0: "behavior", 1:"Start Time", 2:"End Time", 
                     3:"Magnitude Value 1", 4:"Unit Value 1", 
                     5:"Magnitude Value 2", 6:"Unit Value 2", 
                     7:"Oscillation Value"
                     }
 
-        self.MFCBehaviorList = list()
+        self.__MFCBehaviorList = list()
 
-        self.pressureBehaviorList = list()
+        self.__pressureBehaviorList = list()
 
-        self.cycle = 0
+        self.__cycle = 0
 
-        self.errflag = 1
+        self.__save_list = list()
 
-        self.cycleLength = 0
+        self.__errflag = 1
 
-        self.pressureCtrlBool = False
-        
-        self.masterDict = {}
+        self.__cycleLength = 0
 
-        self.slaveBehaviorList = []
+        self.__slaveBehaviorList = list()
 
-        self.correctionKey = {
+        self.__correctionKey = {
             "Actylene": 0.58, "Air": 1.00, "Ammonia": 0.73, 
             "Argon": 1.39, "Arsine": 0.67, "Boron Trichloride": 0.41, 
             "Bromine": 0.81, "Carbon Dioxide": 0.70, 
@@ -62,46 +61,57 @@ class Controller:
             "Sulfur Dioxide":0.69, "Sulfur Hexafluoride":0.26, 
             "Trichlorofluoromethane":0.33, "Trichlorosilane":0.33, 
             "Tungsten Hexafluoride":0.25, "Xenon":1.32}
+        
+        self.pressureCtrlBool = pressure_bool
+        
+    def setNumberOfCycles(self, cycle):
+        self.__cycle = cycle
 
-    def updateMaster(self):
-        self.masterDict = {0:self.cycle, 1:self.cycleLength, 
-            2: self.MFCBehaviorList, 3:self.pressureCtrlBool, 
-            4:self.pressureBehaviorList,5:self.slaveBehaviorList}
-    
-    def setNumberofCycles(self, cycle):
-        self.cycle = cycle
-        self.updateMaster()
+    def setCycleLength(self, duration):
+        self.__cycleLength = duration
 
-    def set_cycle_length(self, duration):
-        self.cycleLength = duration
-        self.updateMaster()
-
-    def setMFCBehaviorList( self, gas, port, behavior, start_time, 
-                            end_time, magnitude0, units0, magnitude1, 
-                            units1, oscillations
+    def setMFCBehaviorList( self,gas=None,port=None,behavior=None,start_time=None, 
+                            end_time = None, magnitude0 = None, units0 = None, 
+                            magnitude1= None, units1= None, oscillations= None
                         ):
-        self.MFCBehaviorList.append([[port,gas,behavior, 
+        self.__MFCBehaviorList.append([port,gas,behavior, 
             start_time, end_time, magnitude0, units0, 
-            magnitude1, units1, oscillations]])
-
-    def setPressureCtrlBoolean(self, my_bool):
-        self.pressureCtrlBool = my_bool
-        if not my_bool:
-            self.pressureBehaviorList = None
-        else:
-            self.pressureBehaviorList = list()
-        self.updateMaster()
+            magnitude1, units1, oscillations])
 
     def setPressureBehaviorList(self, behavior, start_time, end_time, 
                                 magnitude0, units0, magnitude1, 
                                 units1, oscillations):
-        self.pressureBehaviorList.append([[behavior, start_time, 
+        self.__pressureBehaviorList.append([behavior, start_time, 
             end_time, magnitude0, units0, magnitude1, units1, 
-            oscillations]])
+            oscillations])
 
     def setSlaveList(self, slave_bool, port_id, master_id, ratio):
-        self.slaveBehaviorList.append([slave_bool, port_id, master_id, ratio])
-        self.updateMaster()
+        self.__slaveBehaviorList.append([slave_bool, port_id, master_id, ratio])
+
     
     def beginExperiment(self):
         print("Big Work")
+
+    def createSaveList(self):
+        self.__save_list = [[self.pressureCtrlBool, self.__cycle, self.__cycleLength]]
+        self.__save_list.append(self.__pressureBehaviorList)
+        self.__save_list.append(self.__MFCBehaviorList)
+        self.__save_list.append(self.__slaveBehaviorList)
+
+    def parseData(self):
+        pressureCtrlBool = self.__save_list[0][0]
+        cycle = self.__save_list[0][1]
+        cycleLength = self.__save_list[0][2]
+        pressureBehaviorList = self.__save_list[1]     
+        MFCBehaviorList = self.__save_list[2]
+        slaveBehaviorList = self.__save_list[3]
+
+    def saveData(self, location):
+        self.createSaveList()
+        with open(location, 'wb') as filehandle:  
+            pickle.dump(self.__save_list, filehandle)
+        print(self.__save_list)
+
+    def loadData(self, location):
+        with open(location, 'wb') as filehandle:  
+            save_data = pickle.load(self.__save_list, filehandle)

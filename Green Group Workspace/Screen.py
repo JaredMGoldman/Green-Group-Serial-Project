@@ -1,7 +1,7 @@
 import appJar as aj
 import numpy as np
 import time
-import controller as ctrl
+import Controller as ctrl
 
 class Screen(aj.gui):
     
@@ -55,7 +55,7 @@ class Screen(aj.gui):
 
         self.behavior = ""              # saves the type of behavior for internal and data saving applications
 
-        self.data = ctrl.Controller()   # creates the object that will store all of the relevent data    
+        self.data = None                # creates the object that will store all of the relevent data    
 
         self.slaveDict= {               # the dictionary of lists with keys coorresponding to port number
             1:[9,0.0, False, False],    # [master port, ratio, isSlave, is key port active]
@@ -256,16 +256,35 @@ class Screen(aj.gui):
             behavior of a gas governed by an MFC.
             """
             self.colCtr = 0
-            self.addLabel("l11" + str(self.pressureSerial), "Port " + str(self.gasIndex[self.iter]), row = self.rowCtr)
-            self.addLabel("l12"+ str(self.pressureSerial), "Gas: " +  str(self.gasDict[self.gasIndex[self.iter]]), row = self.rowCtr +1)
+            self.addLabel("l11" + str(self.pressureSerial), 
+                "Port " + str(self.gasIndex[self.iter]), 
+                row = self.rowCtr)
+            self.addLabel("l12"+ str(self.pressureSerial), 
+                "Gas: "+str(self.gasDict[self.gasIndex[self.iter]]), 
+                row = self.rowCtr +1)
             self.colCtr += 1
-            self.addVerticalSeparator(column = self.colCtr, rowspan = 3, row = self.rowCtr)
+            self.addVerticalSeparator(column = self.colCtr, 
+                rowspan = 3, row = self.rowCtr)
             self.colCtr += 1
-            self.addLabel("l13" + str(self.pressureSerial), "Type of Flow Behavior: ", row= self.rowCtr, column = self.colCtr)
+            self.addLabel("l13" + str(self.pressureSerial), 
+                "Type of Flow Behavior: ", row= self.rowCtr, 
+                column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("TB"+str(self.pressureSerial), ["- Select an Option -", "Static", "Linear", "Exponential", "Periodic"], row = self.rowCtr, column=self.colCtr)
+            self.addOptionBox("TB"+str(self.pressureSerial), 
+                ["- Select an Option -", "Static", "Linear", 
+                "Exponential", "Periodic"], 
+                row = self.rowCtr, column=self.colCtr)
             self.rowCtr += 1
-            self.setOptionBoxChangeFunction("TB"+str(self.pressureSerial), myChangeFunc)
+            self.setOptionBoxChangeFunction(
+                "TB"+str(self.pressureSerial), myChangeFunc)
+        
+        def final(btn):
+            my_entry = self.getEntry("File Location")
+            my_name = self.getEntry("Filename")
+            my_file = my_entry + "/" + my_name+ ".data"
+            my_file.replace(" ", "_")
+            self.data.saveData(my_file)
+            self.finalDestination()
         
         def heave(btn):
             """
@@ -277,7 +296,24 @@ class Screen(aj.gui):
             This function occurs when the "start experiment" button is 
             clicked. It redirects the user to the experiment screen. 
             """
-            self.finalDestination()
+            save = self.yesNoBox("Save Experiment Information",
+                "Would you like to save the current experimental setup?")
+            if save:
+                # self.removeAllWidgets()
+                # self.addLabel('', 
+                #     'Choose a destination for the experimental configuration')
+                # self.addDirectoryEntry("File Location")
+                # self.addButton("Finalize Location", final)
+                self.errflag = 1
+                self.removeAllWidgets()
+                self.addLabel('', 
+                    'Choose a destination for the experimental configuration', colspan = 2)
+                self.addLabel("Intrusctions", "Pleasse enter a name for your setup:")
+                self.addEntry("Filename", row = 1, column = 1)
+                self.addDirectoryEntry("File Location", colspan = 2)
+                self.addButton("Finalize Location", final, colspan = 2)
+            else:
+                self.finalDestination()
             
 
         def bigPush():
@@ -352,7 +388,6 @@ class Screen(aj.gui):
                     self.iter += 1
                     if self.iter == len(self.gasIndex):
                         self.rowCtr -= 4
-                        self.data.updateMaster()
                         self.addButton("Start Experiment", heave, 
                         row = self.rowCtr, column = 8)
                     else:
@@ -597,6 +632,14 @@ class Screen(aj.gui):
         self.gasIndex = []
         self.iter = 0
         
+        def final(btn):
+            my_entry = self.getEntry("File Location")
+            my_name = self.getEntry("Filename")
+            my_file = my_entry +  "/" + my_name+ ".data"
+            my_file.replace(" ", "_")
+            self.data.saveData(my_file)
+            self.finalDestination()
+        
         def push():
             save_bool = True
             for i in range(1,9):
@@ -624,15 +667,31 @@ class Screen(aj.gui):
                         self.gasDict[i] = self.getOptionBox("Gases"+str(self.gasCtrDict[i]))
                         if self.myDict[i] == 1 and not self.slaveDict[i][2]:
                             self.gasIndex.append(i)
-                        self.data.setSlaveList(self.slaveDict[i][2], i,
-                                                self.slaveDict[i][0],
-                                                self.slaveDict[i][3])
+                    self.data.setSlaveList(self.slaveDict[i][2], i,
+                                            self.slaveDict[i][0],
+                                            self.slaveDict[i][3])
                 if self.errflag == 1:
+                    for i in range(1,9):
+                        self.data.setMFCBehaviorList(self.gasDict[i],i)
+
                     self.errflag = 0
-                    self.finalDestination()
+                    save = self.yesNoBox("Save Experiment Information",
+                        "Would you like to save the current experimental setup?")
+                    if save:
+                        self.errflag = 1
+                        self.removeAllWidgets()
+                        self.addLabel('', 
+                            'Choose a destination for the experimental configuration', colspan = 2)
+                        self.addLabel("Intrusctions", "Pleasse enter a name for your setup:")
+                        self.addEntry("Filename", row = 1, column = 1)
+                        self.addDirectoryEntry("File Location", colspan = 2)
+                        self.addButton("Finalize Location", final, colspan = 2)
+                    else:
+                        self.finalDestination()
                 else:
                     self.render2fc2()
         
+
         def removeSlaveDetails(index):
             self.slaveDict[index][2] = False
             self.removeCheckBox("Slave"+str(index))
@@ -840,9 +899,11 @@ class Screen(aj.gui):
                     "Are you sure you want "+self.cycles+" cycles for "+self.lengthEach+" minute each?")
             elif self.cycles == '1' and self.lengthEach != '1':
                 entry_bool=self.yesNoBox("Consider Revising", 
-                "Are you sure you want "+self.cycles+" cycle for "+self.lengthEach+" minutes each?")
+                "Are you sure you want "+self.cycles+" cycle for "+self.lengthEach+" minutes?")
 
             if entry_bool:
+                self.data.setCycleLength(int(self.lengthEach))
+                self.data.setNumberOfCycles(int(self.cycles))
                 self.render2fc1()
 
         self.removeAllWidgets()
@@ -1005,7 +1066,6 @@ class Screen(aj.gui):
                 self.initialTime = stop
                 self.removeButton("Okay")
                 if self.initialTime == int(self.lengthEach):
-                    self.data.updateMaster()
                     self.addButton("Select MFCs", press)
                     self.setButtonBg("Select MFCs", "LimeGreen")
                 else:
@@ -1095,8 +1155,6 @@ class Screen(aj.gui):
             self.addSpinBoxRange("ET" + str(self.pressureSerial), 
                 int(self.initialTime), int(self.lengthEach),row = self.rowCtr, 
                 column = self.colCtr)
-            self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), 
-                periodGetter)
             self.colCtr += 1
             self.addButton("Okay",bigPush,row=self.rowCtr,column=self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
@@ -1237,11 +1295,13 @@ class Screen(aj.gui):
 
             elif self.cycles == 1 and self.lengthEach != 1:
                 entry_bool = self.yesNoBox("Consider Revising", 
-                    "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minutes each?")
+                    "Are you sure you want " + str(self.cycles) + " cycle for " + str(self.lengthEach) + " minutes?")
 
 
             if entry_bool:
-                self.removeAllWidgets(current = False)
+                self.data.setCycleLength(int(self.lengthEach))
+                self.data.setNumberOfCycles(int(self.cycles))
+                self.removeAllWidgets()
                 self.render2p1()
             
         def back(btn):
@@ -1283,7 +1343,7 @@ class Screen(aj.gui):
         with which to select the type of experiment they are performing,
         whether it is dependent upon pressure or flow rate.
         """
-        self.data.setPressureCtrlBoolean(False)
+        self.data = ctrl.Controller(False)
         
         def press(btn):
             """
@@ -1298,10 +1358,10 @@ class Screen(aj.gui):
             """
             selection = self.getRadioButton("options")
             if selection == "Pressure":
-                self.data.setPressureCtrlBoolean(True)
+                self.data = ctrl.Controller(True)
                 self.render2p()
             else:
-                self.data.setPressureCtrlBoolean(False)
+                self.data = ctrl.Controller(False)
                 self.render2fc()
         
         def back(btn):
