@@ -55,7 +55,7 @@ class Screen(aj.gui):
 
         self.behavior = ""              # saves the type of behavior for internal and data saving applications
 
-        self.data = None                # creates the object that will store all of the relevent data    
+        self.data = ctrl.Controller()                # creates the object that will store all of the relevent data    
 
         self.slaveDict= {               # the dictionary of lists with keys coorresponding to port number
             1:[9,0.0, False, False],    # [master port, ratio, isSlave, is key port active]
@@ -1343,7 +1343,7 @@ class Screen(aj.gui):
         with which to select the type of experiment they are performing,
         whether it is dependent upon pressure or flow rate.
         """
-        self.data = ctrl.Controller(False)
+        self.data.setPressureBool(False)
         
         def press(btn):
             """
@@ -1358,10 +1358,10 @@ class Screen(aj.gui):
             """
             selection = self.getRadioButton("options")
             if selection == "Pressure":
-                self.data = ctrl.Controller(True)
+                self.data.setPressureBool(True)
                 self.render2p()
             else:
-                self.data = ctrl.Controller(False)
+                self.data.setPressureBool(False)
                 self.render2fc()
         
         def back(btn):
@@ -1417,17 +1417,17 @@ class Screen(aj.gui):
             do not know how to remove.
             """
             self.errflag = 1
-            self.removeAllWidgets()
+            my_setup = self.getEntry("Saved Experiment")
+            self.data.loadData(my_setup)
             self.finalDestination()
         
         self.removeAllWidgets()
 
-        self.addLabel("tit", "Select The Experimental Setup", row = 0, 
-            column = 1)
-        self.addLabel("", "Saved Experiment", row = 1, column = 0)
-        entry = self.addFileEntry("Saved Experiment", row = 1, column = 1)
-        self.addButton("Start Experiment", heave, row = 2, column = 0)
-        self.setButtonBg("Start Experiment", "LimeGreen", colspan = 2)
+        self.addLabel("tit", "Select The Experimental Setup:", row = 0, 
+            column = 0)
+        self.addFileEntry("Saved Experiment", row = 0, column = 1)
+        self.addButton("Start Experiment", heave, row = 1, colspan = 2)
+        self.setButtonBg("Start Experiment", "LimeGreen")
 
 
     

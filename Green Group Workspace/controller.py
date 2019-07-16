@@ -2,7 +2,7 @@ import appJar as aj
 import pickle
 
 class Controller:
-    def __init__(self, pressure_bool):
+    def __init__(self):
         self.__behaviorTypeDict = {
                         "Static" : 0, "Linear":1, 
                         "Exponential":2, "Periodic":3
@@ -62,13 +62,16 @@ class Controller:
             "Trichlorofluoromethane":0.33, "Trichlorosilane":0.33, 
             "Tungsten Hexafluoride":0.25, "Xenon":1.32}
         
-        self.pressureCtrlBool = pressure_bool
+        self.__pressureCtrlBool = False
         
     def setNumberOfCycles(self, cycle):
         self.__cycle = cycle
 
     def setCycleLength(self, duration):
         self.__cycleLength = duration
+
+    def setPressureBool(self, bool):
+        self.__pressureCtrlBool = bool
 
     def setMFCBehaviorList( self,gas=None,port=None,behavior=None,start_time=None, 
                             end_time = None, magnitude0 = None, units0 = None, 
@@ -110,8 +113,9 @@ class Controller:
         self.createSaveList()
         with open(location, 'wb') as filehandle:  
             pickle.dump(self.__save_list, filehandle)
-        print(self.__save_list)
+
 
     def loadData(self, location):
-        with open(location, 'wb') as filehandle:  
-            save_data = pickle.load(self.__save_list, filehandle)
+        with open(location, 'rb') as filehandle:  
+            self.__save_list = pickle.load(filehandle)
+        print(self.__save_list)
