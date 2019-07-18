@@ -202,8 +202,7 @@ class Screen(aj.gui):
         self.addLabel("k0", "Flow Rates vs. Time", row = 2, column = 0, colspan = 2)
         axes1 = self.addPlot("flow rates", 0,0, row = 3, column = 1, width = 1, height= 0.91803398875 )
         self.addOptionBox("Flow Units", 
-        ["- Units -", "SCCM", "SLM", 
-        "SCMM", "SCFH", "SCFM", "SLM"]
+        ["- Units -", "SCCM", "SLM"]
         , row = 3, column = 0)
         
 
@@ -284,7 +283,7 @@ class Screen(aj.gui):
             my_file = my_entry + "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
-            self.finalDestination()
+            # self.finalDestination()
         
         def heave(btn):
             """
@@ -313,7 +312,7 @@ class Screen(aj.gui):
                 self.addDirectoryEntry("File Location", colspan = 2)
                 self.addButton("Finalize Location", final, colspan = 2)
             else:
-                self.finalDestination()
+                # self.finalDestination()
             
 
         def bigPush():
@@ -410,7 +409,7 @@ class Screen(aj.gui):
                 row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
             self.addOptionBox("Units" + str(self.pressureSerial), 
-                ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],
+                ["- Units -", "SCCM", "SLM"],
                 row = self.rowCtr, column= self.colCtr)
 
             self.colCtr += 1
@@ -430,7 +429,7 @@ class Screen(aj.gui):
                 row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
             self.addOptionBox("'Units" + str(self.pressureSerial), 
-                ["- Units -", "SCCM", "SLM", "SCMM", "SCFH", "SCFM", "SLM"],
+                ["- Units -", "SCCM", "SLM"],
                 row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
@@ -638,7 +637,7 @@ class Screen(aj.gui):
             my_file = my_entry +  "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
-            self.finalDestination()
+            # self.finalDestination()
         
         def push():
             save_bool = True
@@ -687,7 +686,8 @@ class Screen(aj.gui):
                         self.addDirectoryEntry("File Location", colspan = 2)
                         self.addButton("Finalize Location", final, colspan = 2)
                     else:
-                        self.finalDestination()
+                        # self.finalDestination()
+                        print('deal with this')
                 else:
                     self.render2fc2()
         
@@ -1419,7 +1419,7 @@ class Screen(aj.gui):
             self.errflag = 1
             my_setup = self.getEntry("Saved Experiment")
             self.data.loadData(my_setup)
-            self.finalDestination()
+            # self.finalDestination()
         
         self.removeAllWidgets()
 
