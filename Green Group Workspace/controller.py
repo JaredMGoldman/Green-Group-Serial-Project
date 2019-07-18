@@ -3,6 +3,7 @@ import pickle
 from enum import Enum
 import numpy as np
 import time
+import csv
 
 class Controller:
     """
@@ -30,6 +31,10 @@ class Controller:
                 }
         
         self.__activePorts = []         # Active MFC ports (1,2,3,...)
+
+        self.__gases = []               # Gas in said MFC
+
+        self.__units = []               # Units of gas
         
         self.__time_points = []         # Time measurements to be saved in csv
 
@@ -158,6 +163,7 @@ class Controller:
                         break
                 if new:
                     self.__activePorts.append(mfc[0])
+                    self.__gases.append(mfc[1])
                     self.__flow_points.append([])
         
         for port in self.__slaveBehaviorList:
@@ -172,7 +178,7 @@ class Controller:
             self.dataUpdate()
             self.setpointUpdate()
             total_time = time.time()-self.__start
-        
+        self.endExperiment()
         print("Big Work")
 
     def __createSaveList(self):
@@ -343,3 +349,30 @@ class Controller:
                             behave[9], t)
                     
                     # enter setpoint to machine once I figure out how
+
+    def endExperiment(self):
+        def push(btn):
+            my_entry = self.getEntry("Data Location")
+            my_name = self.getEntry("File Name")
+            my_file = my_entry + "/" + my_name+ ".csv"
+            my_file.replace(" ", "_")
+            with open(my_file, 'wb') as filehandle:  
+                writer = csv.writer(filehandle, dialect = 'excel', quoting=csv.QUOTE_NONNUMERIC)
+            header = ["Time (s)", "Pressure (Torr)"]
+            for gas in self.__gases:
+                header.append(str(gas) + " Flow Rate (SCCM)")
+            
+            rows = zip(self.__time_points, self.__pressure_points)
+            for points in self.__flow_points:
+                rows = zip(rows, points)
+            writer.writerow(header)
+            for row in rows:
+                writer.writerow(row)
+            app.stop()
+            
+        app = aj.gui()
+        app.setFont(size = 24, family = "Times")
+        app.addLabel ("", "Provide a location and a name for the experimental data file")
+        app.addLabelEntry("File Name")
+        app.addLabelDirectoryEntry("Data Location")
+        app.addButton("Submit", push)
