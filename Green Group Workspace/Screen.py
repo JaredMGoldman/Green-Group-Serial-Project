@@ -40,7 +40,7 @@ class Screen(aj.gui):
             5:None, 6:None, 
             7:None, 8:None}             
                                         
-        self.gasIndex = []              # Stores the number of the ports that contain gases after confirmation
+        self.gasIndex = []              # Stores the indexes of the ports that contain gases after confirmation
         
         self.iter = 0                   # Incrementing variable used in the gas behavior section to move through the final gasses 
         
@@ -283,6 +283,7 @@ class Screen(aj.gui):
             my_file = my_entry + "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
+            self.data.beginExperiment()
             # self.finalDestination()
         
         def heave(btn):
@@ -312,8 +313,9 @@ class Screen(aj.gui):
                 self.addDirectoryEntry("File Location", colspan = 2)
                 self.addButton("Finalize Location", final, colspan = 2)
             else:
+                self.data.beginExperiment()
                 # self.finalDestination()
-            
+                print("Go to end")
 
         def bigPush():
             """
@@ -637,6 +639,7 @@ class Screen(aj.gui):
             my_file = my_entry +  "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
+            self.data.beginExperiment()
             # self.finalDestination()
         
         def push():
@@ -678,6 +681,7 @@ class Screen(aj.gui):
                         "Would you like to save the current experimental setup?")
                     if save:
                         self.errflag = 1
+                        self.data.setActivePorts(self.gasDict)
                         self.removeAllWidgets()
                         self.addLabel('', 
                             'Choose a destination for the experimental configuration', colspan = 2)
@@ -686,6 +690,7 @@ class Screen(aj.gui):
                         self.addDirectoryEntry("File Location", colspan = 2)
                         self.addButton("Finalize Location", final, colspan = 2)
                     else:
+                        self.data.beginExperiment()
                         # self.finalDestination()
                         print('deal with this')
                 else:
@@ -1419,6 +1424,7 @@ class Screen(aj.gui):
             self.errflag = 1
             my_setup = self.getEntry("Saved Experiment")
             self.data.loadData(my_setup)
+            self.data.beginExperiment()
             # self.finalDestination()
         
         self.removeAllWidgets()

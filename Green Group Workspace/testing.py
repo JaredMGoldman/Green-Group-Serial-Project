@@ -20,5 +20,9 @@
 
 # print(ret)
 
-if 'Hello' == "Hello":
-    print('hello')
+op = 1 % 30
+po = 30 % 1
+
+
+print(op)
+print(po)
