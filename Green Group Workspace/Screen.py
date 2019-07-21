@@ -46,13 +46,6 @@ class Screen(aj.gui):
         
         self.errflag = 0                # Several uses. Generally useful tool in choosing between two paths (0/1)              
         
-        self.units = "Torr"             # Label for units of pressure for graph on experimental page
-        
-        self.start = None               # Beginning of experiment for self replicating process (I hope!) 
-                                        # Actual process has yet to be tested. Actual feasibility unknown.         
-        
-        self.myRate = "SLM"             # Label for units of flow rate for graph on experimental page
-
         self.behavior = ""              # saves the type of behavior for internal and data saving applications
 
         self.data = ctrl.Controller()                # creates the object that will store all of the relevent data    
@@ -71,160 +64,8 @@ class Screen(aj.gui):
             title=None, geom=None, handleArgs=True, language=None, 
             startWindow=None, useTtk=False, useSettings=False, 
             showIcon=True, **kwargs
-            )
+            )        
     
-    def backstep(self):
-
-        self.addButton("\u21A9")
-        
-    
-    def finalDestination(self):
-        """
-        input:
-                none
-        output: 
-                experimental screen
-        
-        This function creates the display for the experimental screen 
-        including the labels for the pressure versus time and flow rate 
-        versus time graph, the two graphs themselves, and selector 
-        optionBoxs for the user to select the units they want to display 
-        the data in on the screen.
-        """
-        def reP(axes):
-            """
-            input:
-                    axes - a matplotlib axes figure object representing 
-                    the graph of pressure versus time
-
-            output:
-                    updated pressure versus time graph
-
-            This function should update the pressure versus time graph 
-            with data from the machine.
-            
-            * It will require a function call init that gathers the *
-            *   data from the machine (to be built in controller.)  *
-            """
-
-            x = np.arange(0,10,0.1) #Filler code
-            axes.cla()
-            axes0.set_ylabel("Pressure (" + str(self.units)+")")
-            axes0.set_xlabel("Time (min)")
-            axes.plot(x, np.cos(x)) # Filler function
-            self.refreshPlot("pressure")
-        
-        def reFC(axes):
-            """
-            input:
-                    axes - a matplotlib axes figure object representing 
-                    the graph of flow rate versus time
-
-            output:
-                    none
-
-            This function updates the flow rate versus time graph with 
-            data from the machine.
-            
-            * It will require a function call init that gathers the *
-            *   data from the machine (to be built in controller.)  *
-            """
-
-            x = np.arange(0,10,0.1)
-            axes.cla()
-            axes1.set_ylabel("Flow Rate (" + str(self.myRate) + ")")
-            axes1.set_xlabel("Time (min)")
-            for i in range(0,len(self.gasIndex)):
-                axes.scatter(x, np.multiply(x,np.sin(x))+i, label = str(self.gasDict[self.gasIndex[i]]))
-            axes.legend()
-            self.refreshPlot("flow rates")
-
-        def PU(btn):
-            """
-            input:
-                    none
-
-            output:
-                    none
-            
-            This function occurs when the units of pressure have been 
-            selected by the user from the "Pressure Units" optionBox 
-            object. It will change the y-axis label on the pressure 
-            versus time graph and update the data input function in 
-            order to reflect the new units of pressure on the graph.
-            """
-            self.units = self.getOptionBox("Pressure Units")
-            axes0.set_ylabel("Pressure (" + str(self.units)+")")
-            self.refreshPlot("pressure")
-
-        def FU(btn):
-            """
-            input:
-                    none
-
-            output:
-                    none
-            
-            This function occurs when the units of flow rate have been 
-            selected by the user from the "Flow Units" optionBox object.
-            It will change the y-axis label on the flow rate versus time 
-            graph and update the data input function in order to reflect 
-            the new units of flow rate on the graph.
-            """
-            self.myRate = self.getOptionBox("Flow Units")
-            axes1.set_ylabel("Flow Rate (" + str(self.myRate) + ")")
-            self.refreshPlot("flow rates")
-
-        ########## The startup protocol of the experimental screen when coming from a custom experimental setup. ###########
-        #       The widgets are all destroyed despite throwing an unknown error. This error is not fatal, so the show goes on.
-        if self.errflag == 0:
-            self.removeAllWidgets()
-
-
-        ########### The startup protocol of the experimental screen when coming from a saved experimental setup. ###########
-        #       Labels are added over the widgets as removal of a fileEntry widget object does not work  well.
-        else:
-            self.addLabel("1", "")
-            self.addLabel("2", "")
-            self.addLabel("3", "")    
-
-        # Creating the backbone of the pressure versus time graph (label, plot, unit selector.)
-        self.addLabel("l0", "Pressure vs. Time", row = 0, column = 0, colspan = 2)                      
-        axes0 = self.addPlot("pressure", 0, 0, row = 1, column = 1,  width = 1, height= 0.91803398875 )
-        self.addOptionBox("Pressure Units", 
-        ["- Units -", "mTorr", "Torr", "kTorr", 
-        "\u03BC"+"Bar", "mBar", "Bar", 
-        "Pa", "kPa", "Mpa",
-        "\u03BC"+"bar", "mbar", "bar"]
-        , row = 1, column = 0)
-
-        # Creating the backbone of the flow rate versus time graph (label, plot, unit selector.)
-        self.addLabel("k0", "Flow Rates vs. Time", row = 2, column = 0, colspan = 2)
-        axes1 = self.addPlot("flow rates", 0,0, row = 3, column = 1, width = 1, height= 0.91803398875 )
-        self.addOptionBox("Flow Units", 
-        ["- Units -", "SCCM", "SLM"]
-        , row = 3, column = 0)
-        
-
-        # Provide initial values for the two graphs (to be deleted when the automatic update functionality is in full effect.)
-        reP(axes0)
-        reFC(axes1)
-        
-        # Create responsive behavior for the unit selection optionBoxes.
-        self.setOptionBoxChangeFunction("Flow Units", FU)
-        self.setOptionBoxChangeFunction("Pressure Units", PU)
-        
-        # Start time of experiment for internal puposes. Start time of experimental data will be recieved through machine.
-        self.data.beginExperiment()
-        self.start = time.time()
-        
-        # First attempt at automatic update functionality.
-        while(time.time()-self.start <= (60*self.cycles*self.lengthEach)):
-            self.iter += 1
-            time.sleep(2)
-            reP(axes0)
-            reFC(axes1)
-            print("Update Number: " + str(self.iter))
         
                                     #########################################
                                     ################ FLOW RATE ##############     
@@ -283,8 +124,9 @@ class Screen(aj.gui):
             my_file = my_entry + "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
+            self.stop()
             self.data.beginExperiment()
-            # self.finalDestination()
+
         
         def heave(btn):
             """
@@ -313,9 +155,9 @@ class Screen(aj.gui):
                 self.addDirectoryEntry("File Location", colspan = 2)
                 self.addButton("Finalize Location", final, colspan = 2)
             else:
+                self.stop()
                 self.data.beginExperiment()
-                # self.finalDestination()
-                print("Go to end")
+
 
         def bigPush():
             """
@@ -338,47 +180,43 @@ class Screen(aj.gui):
             # initialize variables used here to preserve backstep functionality
             stop = int(self.getSpinBox("ET" + str(self.pressureSerial)))
             mag1 = 0
-            units1 = ""
             oscillations = 0
             save_criteria = True
             mag0 = self.getEntry("DFR" + str(self.pressureSerial)) 
-            units0 = self.getOptionBox("Units" + str(self.pressureSerial))
             
             # Save values to check validity
             if self.behavior == "Linear" or self.behavior == "Exponential":
                 mag1 = self.getEntry("'DFR" + str(self.pressureSerial)) 
-                units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
-
+            
             elif self.behavior == "Periodic":
-                mag1 = self.getEntry("'DFR" + str(self.pressureSerial)) 
-                units1 = self.getOptionBox("'Units" + str(self.pressureSerial))
+                mag1 = self.getEntry("'DFR" + str(self.pressureSerial))   
                 oscillations =  int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
 
             # Check if user input is valid before saving local variables as instance variables
-            if mag0 == None or units0 == None or stop == 0 or mag1 == None or units1 == None:
+            if mag0 == None  or stop == 0 or mag1 == None :
                 save_criteria = False
                 self.warningBox("Invalid Entry",
-                     "Please make sure you have entered a value for flow rate, units, and end time." )
+                     "Please make sure you have entered a value for flow rate and end time." )
             elif mag0 < 0 or mag1 < 0:
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
                     "Please make sure you have entered a positive value for flow rate." )
             elif ((self.behavior == "Linear" or self.behavior == "Exponential" or 
-                self.behavior == "Periodic") and (mag1 == None or units1 == None)):
+                self.behavior == "Periodic") and (mag1 == None )):
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
-                    "Please make sure you have entered a value for flow rate and units." )
+                    "Please make sure you have entered a value for flow rate." )
             elif self.behavior == "Periodic" and oscillations == 1 :
                 save_criteria = self.yesNoBox("Invalid Entry", 
                     "Are you sure you only want 1 oscillation?" )
             
             if save_criteria:
                 self.pressureSerial += 1
-                self.initialTime = stop
                 self.data.setMFCBehaviorList(
                     self.gasDict[self.gasIndex[self.iter]], self.gasIndex, 
-                    self.behavior, self.initialTime, stop, mag0, units0, 
-                    mag1, units1, oscillations)
+                    self.behavior, self.initialTime, stop, mag0, 
+                    mag1, oscillations)
+                self.initialTime = stop
                 self.removeButton("Okay")
                 self.rowCtr += 1
                 self.addHorizontalSeparator(row = self.rowCtr, 
@@ -395,6 +233,8 @@ class Screen(aj.gui):
                         self.gasIndex[self.iter]  
                         self.initialTime = 0
                         newGasRow()
+                else:
+                    newGasRow()
                         
         
         def flowSelecter():
@@ -410,10 +250,8 @@ class Screen(aj.gui):
             self.addNumericEntry("DFR" + str(self.pressureSerial), 
                 row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("Units" + str(self.pressureSerial), 
-                ["- Units -", "SCCM", "SLM"],
+            self.addLabel(str(self.pressureSerial), "SCMM",
                 row = self.rowCtr, column= self.colCtr)
-
             self.colCtr += 1
 
         def flowSelecter1():
@@ -430,8 +268,7 @@ class Screen(aj.gui):
             self.addNumericEntry("'DFR" + str(self.pressureSerial), 
                 row = self.rowCtr, column=self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("'Units" + str(self.pressureSerial), 
-                ["- Units -", "SCCM", "SLM"],
+            self.addLabel(str(self.pressureSerial)  + "'", "SCMM",
                 row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
@@ -455,7 +292,6 @@ class Screen(aj.gui):
             self.addSpinBoxRange("ET"+str(self.pressureSerial), 
                 int(self.initialTime), int(self.lengthEach),
                 row = self.rowCtr, column = self.colCtr)
-            # self.setSpinBoxChangeFunction("ET" + str(self.pressureSerial), periodGetter)
             self.colCtr += 1
             self.addButton("Okay", bigPush, row = self.rowCtr, column = self.colCtr)
             self.setButtonBg("Okay", "LimeGreen")
@@ -598,7 +434,7 @@ class Screen(aj.gui):
 
         self.addButton("\u21A9", back)
         self.setButtonBg("\u21A9", "Red")
-
+        self.initialTime = 0
         self.addLabel("l0",
             "Please select the desired behavior for each of the gasses in turn", 
             row = 0, column = 2)
@@ -639,8 +475,9 @@ class Screen(aj.gui):
             my_file = my_entry +  "/" + my_name+ ".data"
             my_file.replace(" ", "_")
             self.data.saveData(my_file)
+            self.stop()
             self.data.beginExperiment()
-            # self.finalDestination()
+
         
         def push():
             save_bool = True
@@ -671,7 +508,7 @@ class Screen(aj.gui):
                             self.gasIndex.append(i)
                     self.data.setSlaveList(self.slaveDict[i][2], i,
                                             self.slaveDict[i][0],
-                                            self.slaveDict[i][3])
+                                            self.slaveDict[i][1])
                 if self.errflag == 1:
                     for i in range(1,9):
                         self.data.setMFCBehaviorList(self.gasDict[i],i)
@@ -690,10 +527,11 @@ class Screen(aj.gui):
                         self.addDirectoryEntry("File Location", colspan = 2)
                         self.addButton("Finalize Location", final, colspan = 2)
                     else:
+                        self.stop()
                         self.data.beginExperiment()
-                        # self.finalDestination()
-                        print('deal with this')
+
                 else:
+                    self.data.setActivePorts(self.gasDict)
                     self.render2fc2()
         
 
@@ -1030,34 +868,31 @@ class Screen(aj.gui):
             # initializes variable in order to enable backstep functionality
             stop = int(self.getSpinBox("ET" + str(self.pressureSerial)))
             mag1 = 0
-            units1 = ""
+
             oscillations = 1
             mag0 = self.getEntry("DFR" + str(self.pressureSerial)) 
-            units0 = self.getOptionBox("Units" + str(self.pressureSerial))
             save_criteria = True
 
             if self.behavior == "Linear" or self.behavior == "Exponential":
                 mag1=self.getEntry("'DFR"+str(self.pressureSerial)) 
-                units1=self.getOptionBox("'Units"+str(self.pressureSerial))
 
             elif self.behavior == "Periodic":
                 mag1=self.getEntry("'DFR" + str(self.pressureSerial)) 
-                units1=self.getOptionBox("'Units" + str(self.pressureSerial))
                 oscillations=int(self.getSpinBox("Oscillations" + str(self.pressureSerial)))
             
             # Checks possible user errors
-            if mag0 == None or units0 == None or stop == 0:
+            if mag0 == None or stop == 0:
                 save_criteria = False
                 self.warningBox("Invalid Entry",
-                     "Please make sure you have entered a value for pressure, units, and end time." )
+                     "Please make sure you have entered a value for pressure and end time." )
             elif mag0 < 0 or mag1 < 0:
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
                     "Please make sure you have entered a positive value for pressure." )
-            elif (self.behavior == "Linear" or self.behavior == "Exponential" or self.behavior == "Periodic") and (mag1 == None or units1 == None):
+            elif (self.behavior == "Linear" or self.behavior == "Exponential" or self.behavior == "Periodic") and (mag1 == None ):
                 save_criteria = False
                 self.warningBox("Invalid Entry", 
-                    "Please make sure you have entered a value for pressure and units." )
+                    "Please make sure you have entered a value for pressure." )
             elif self.behavior == "Periodic" and oscillations == 1 :
                 save_criteria = self.yesNoBox("Consider Revising", 
                     "Are you sure you only want 1 oscillation?" )
@@ -1066,8 +901,7 @@ class Screen(aj.gui):
             if save_criteria:
                 self.pressureSerial += 1
                 self.data.setPressureBehaviorList(self.behavior, 
-                    self.initialTime, stop, mag0, units0, mag1, 
-                    units1, oscillations)
+                    self.initialTime, stop, mag0, mag1, oscillations)
                 self.initialTime = stop
                 self.removeButton("Okay")
                 if self.initialTime == int(self.lengthEach):
@@ -1112,10 +946,7 @@ class Screen(aj.gui):
             self.addNumericEntry("DFR" + str(self.pressureSerial),
                 row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("Units" + str(self.pressureSerial), 
-                ["- Units -", "mTorr", "Torr", "kTorr", 
-                "\u03BC"+"Bar", "mBar", "Bar", "Pa", "kPa", 
-                "Mpa","\u03BC"+"bar", "mbar", "bar"],
+            self.addLabel(str(self.pressureSerial), "Pa", 
                 row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
@@ -1133,10 +964,8 @@ class Screen(aj.gui):
             self.addNumericEntry("'DFR" + str(self.pressureSerial),
                 row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox("'Units" + str(self.pressureSerial), 
-                ["- Units -", "mTorr", "Torr", "kTorr", 
-                "\u03BC"+"Bar","mBar", "Bar", "Pa", "kPa", "Mpa",
-                "\u03BC"+"bar", "mbar", "bar"],row = self.rowCtr, 
+            self.addOptionBox(str(self.pressureSerial) + "'", 
+                "Pa",row = self.rowCtr, 
                 column= self.colCtr)
             self.colCtr += 1
 
@@ -1424,8 +1253,8 @@ class Screen(aj.gui):
             self.errflag = 1
             my_setup = self.getEntry("Saved Experiment")
             self.data.loadData(my_setup)
+            self.stop()
             self.data.beginExperiment()
-            # self.finalDestination()
         
         self.removeAllWidgets()
 

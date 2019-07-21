@@ -13,28 +13,7 @@ class Controller:
     """
     def __init__(self):
         
-        self.pressure_conversion_table ={   # Standardized pressure measurements 
-                "mTorr" : 1000, 
-                "Torr" : 1, 
-                "kTorr" : 0.001, 
-                "\u03BC Bar" : 750062000,
-                "mBar" : 750062, 
-                "Bar" : 750.062, 
-                "Pa" : 0.00750062, 
-                "kPa" : 7.50062, 
-                "Mpa"  : 750062
-                }
-
-        self.gas_conversion_table ={    # Standardized gas flow measurements
-                "SCCM" : 0.001, 
-                "SLM" : 1
-                }
-        
         self.__activePorts = {}         # Active MFC ports (1,2,3,...)
-
-        self.__gases = []               # Gas in said MFC
-
-        self.__units = []               # Units of gas
         
         self.__time_points = []         # Time measurements to be saved in csv
 
@@ -44,7 +23,7 @@ class Controller:
 
         self.__save_list = list()       # Used when loading or saving experiemental setup
 
-        
+        self.__gas_dex = {}
         #### Experimental Information ####
         
         self.__pressureCtrlBool = False
@@ -97,8 +76,9 @@ class Controller:
             "Tungsten Hexafluoride":0.25, "Xenon":1.32}
         
         
-    def setActivePorts(self, dict):
-        self.__activePorts = dict
+    def setActivePorts(self, dictionary):
+        self.__activePorts = dictionary
+
     def setNumberOfCycles(self, cycle):
         """
         conventional setter for number of cycles in experiment
@@ -119,26 +99,26 @@ class Controller:
 
     def setMFCBehaviorList( 
         self,gas=None,port=None,behavior=None,start_time=None, 
-        end_time = None, magnitude0 = None, units0 = None, 
-        magnitude1= None, units1= None, oscillations= None
+        end_time = None, magnitude0 = None, 
+        magnitude1= None, oscillations= None
         ):
         """
         conventional setter for behavior of a gas
         """
+        [port] = port
         self.__MFCBehaviorList.append([port,gas,behavior, 
-            start_time, end_time, magnitude0, units0, 
-            magnitude1, units1, oscillations])
+            start_time, end_time, magnitude0, 
+            magnitude1, oscillations])
 
     def setPressureBehaviorList(
         self, behavior, start_time, end_time, 
-        magnitude0, units0, magnitude1, 
-        units1, oscillations
+        magnitude0, magnitude1, oscillations
         ):
         """
         conventional setter for behavior of pressure in experiment
         """
         self.__pressureBehaviorList.append([behavior, start_time, 
-            end_time, magnitude0, units0, magnitude1, units1, 
+            end_time, magnitude0, magnitude1, 
             oscillations])
 
     def setSlaveList(self, slave_bool, port_id, master_id, ratio):
@@ -155,9 +135,9 @@ class Controller:
         determines slave status to ensure proper experimental setup of instument
         designed to update setpoints and datapoints every 5 seconds
         """
-
         for port in self.__activePorts.keys():
             if self.__activePorts[port] != None:
+                self.__gas_dex[len(self.__flow_points)] = port
                 self.__flow_points.append([])
         
         # for port in self.__slaveBehaviorList:
@@ -169,7 +149,7 @@ class Controller:
         self.__start = time.time()
         total_time = time.time()-self.__start
         while total_time <= self.__cycle * self.__cycleLength * 60:
-            time.sleep(5)
+            time.sleep(0.5)
             self.dataUpdate()
             self.setpointUpdate()
             total_time = time.time()-self.__start
@@ -221,62 +201,53 @@ class Controller:
             self.__save_list = pickle.load(filehandle)
         self.__parseData()
 
-    def static (self, magnitude, units):
+    def static (self, magnitude):
         """
         Constant relationship of gas flow/pressure as a function of time 
         used to set next setpoint
         """
-        if self.__pressureCtrlBool:
-            return magnitude * self.pressure_conversion_table[units]
-        else:
-            return magnitude * self.gas_conversion_table[units]
+        return magnitude
 
-    def linear (self, start, end, mag0, mag1, u0, u1, t):
+    def linear (self, start, end, mag0, mag1, t):
         """
         Linear relationship of gas flow/pressure as a function of time 
         used to set next setpoint
         """
-        if self.__pressureCtrlBool:
-            p0 = mag0 * self.pressure_conversion_table[u0]
-            p1 = mag1 * self.pressure_conversion_table[u1]
-        else:
-            p0 = mag0 * self.gas_conversion_table[u0]
-            p1 = mag1 * self.gas_conversion_table[u1]
+        
+        p0 = mag0 
+        p1 = mag1 
 
-        slope = ((p1 - p0)/ ((end-start)*60))* t
-        y_int = p0 - ((p1-p0)/((end-start)*60)) * start
+
+        slope = ((p1 - p0)/ ((end-start)*60.0))* t
+        y_int = p0 - ((p1-p0)/((end-start)*60.0)) * start
 
         return slope + y_int
 
-    def exponential (self, start, end, mag0, mag1, u0, u1, t):
+    def exponential (self, start, end, mag0, mag1, t):
         """
         Exponential relationship of gas flow/pressure as a function of time 
         used to set next setpoint
         """
-        if self.__pressureCtrlBool:
-            p0 = mag0 * self.pressure_conversion_table[u0]
-            p1 = mag1 * self.pressure_conversion_table[u1]
-        else:
-            p0 = mag0 * self.gas_conversion_table[u0]
-            p1 = mag1 * self.gas_conversion_table[u1]
+        p0 = mag0 
+        p1 = mag1 
+    
+        tot = (end-start)*60.0
+        r = (np.log(p1)-np.log(p0))/(tot)
+        a = p0*np.exp(-r*tot)
 
-        return ((p0 + p1)/(np.exp(end*60)+np.exp(start*60))) * np.exp(t)
+        return a*np.exp(r*t)
 
-    def periodic (self, start, end, mag0, mag1, u0, u1, oscl, t):
+    def periodic (self, start, end, mag0, mag1, oscl, t):
         """
         Periodic relationship of gas flow/pressure as a function of time 
         used to set next setpoint
         """
-        if self.__pressureCtrlBool:
-            p0 = mag0 * self.pressure_conversion_table[u0]
-            p1 = mag1 * self.pressure_conversion_table[u1]
-        else:
-            p0 = mag0 * self.gas_conversion_table[u0]
-            p1 = mag1 * self.gas_conversion_table[u1]
+        p0 = mag0
+        p1 = mag1
 
-        amp = (p1 - p0) / 2
-        per = ((2 * np.pi * oscl) / ((end-start)*60)) * t
-        disp = (p1 + p0) / 2
+        amp = (p1 - p0) / 2.0
+        per = ((2.0 * np.pi * oscl) / ((end-start)*60.0)) * t
+        disp = (p1 + p0) / 2.0
 
         return amp * np.sin(per) + disp
 
@@ -300,24 +271,22 @@ class Controller:
         t = t % (self.__cycleLength*60)
         if self.__pressureCtrlBool:
             for behave in self.__pressureBehaviorList:
-                if t > behave[1]*60 and t < behave[2]*60:
+                if t > behave[1]*60.0 and t < behave[2]*60.0:
                     if behave[0] == 'Static':
-                        pressure_setpoint = self.static(behave[3],behave[4])
+                        pressure_setpoint = self.static(behave[3])
                     
                     elif behave[0] == 'Linear':
                         pressure_setpoint = self.linear(
                             behave[1], behave[2], behave[3],
-                            behave[5],behave[4], behave[6], t)
+                            behave[4], t)
                     
                     elif behave[0] == 'Exponential':
                         pressure_setpoint = self.exponential(behave[1], 
-                            behave[2], behave[3],behave[5],behave[4], 
-                            behave[6], t)
+                            behave[2], behave[3],behave[4], t)
                     
                     elif behave[0] == 'Periodic':
                         pressure_setpoint = self.periodic(behave[1], 
-                            behave[2], behave[3],behave[5],behave[4], 
-                            behave[6], behave[7], t)
+                            behave[2], behave[3],behave[4], behave[5], t)
                     self.__pressure_points.append(pressure_setpoint)
                     for port in self.__flow_points:
                         port.append(2)
@@ -325,39 +294,43 @@ class Controller:
         else:
             self.__pressure_points.append(1)
             for behave in self.__MFCBehaviorList:
-                if t > behave[3]*60 and t < behave[4]*60:
+                port = behave[0]
+
+                if t > behave[3]*60.0 and t < behave[4]*60.0:
                     # slave = False
-                    port = behave[0]
+
                     # for p in self.__slaveBehaviorList:
                     #     if port == p[1] and not p[0]:
                     #         slave = True
                     #         break
-                    if behave[2] == "":
-                        slave = self.__slaveBehaviorList[port-1]
-                        master = slave[2]
-                        flow_setpoint = self.__flow_points[master][-1] * slave[3]
-                    elif behave[2] == 'Static':
-                        flow_setpoint = self.static(behave[5],behave[7])
+                    if behave[2] == 'Static':
+                        flow_setpoint = self.static(behave[5])
                     
                     elif behave[2] == 'Linear':
                         flow_setpoint = self.linear(
                             behave[3], behave[4], behave[5],
-                            behave[7], behave[6], behave[8], t)
+                            behave[6], t)
                     
                     elif behave[2] == 'Exponential':
                         flow_setpoint = self.exponential(
                             behave[3], behave[4], behave[5], 
-                            behave[7], behave[6], behave[8], t)
+                            behave[6], t)
                     
                     elif behave[2] == 'Periodic':
                         flow_setpoint = self.periodic(
                             behave[3], behave[4], behave[5], 
-                            behave[7], behave[6], behave[8], 
-                            behave[9], t)
-                    self.__flow_points[port].append(flow_setpoint)
+                            behave[6], behave[7], t)
+                    self.__flow_points[port-1].append(flow_setpoint)
                     
                     # enter setpoint to machine once I figure out how
-
+            for i in self.__gas_dex.keys():
+                slave = self.__slaveBehaviorList[self.__gas_dex[i]-1]
+                if slave[0]:
+                    master = slave[2]
+                    for j in self.__gas_dex.keys():
+                        if master == self.__gas_dex[j]:
+                            break
+                    self.__flow_points[i] = np.multiply(self.__flow_points[j],slave[3])
     
     def endExperiment(self):
         def push(btn):
@@ -371,6 +344,7 @@ class Controller:
             for i in self.__activePorts.keys():
                 if self.__activePorts[i] != None:
                     header.append(str(self.__activePorts[i]) + " Flow Rate (SCCM)")
+            
             
             if len(self.__flow_points) == 1:
                 var0 = self.__flow_points[0]
@@ -393,8 +367,7 @@ class Controller:
                 var2 = self.__flow_points[2]
                 var3 = self.__flow_points[3]
                 flow_rows = zip(self.__time_points, self.__pressure_points, var0, var1, var2,var3)
-                
-                
+                      
             elif len(self.__flow_points) == 5:
                 var0 = self.__flow_points[0]
                 var1 = self.__flow_points[1]
