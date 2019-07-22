@@ -498,6 +498,13 @@ class Screen(aj.gui):
                         else:
                             master = int(master[-1])
                             self.slaveDict[i][0], self.slaveDict[i][1] = master, ratio
+            for i in range(1,9):
+                master = self.slaveDict[i][0] 
+                if master != 9 and self.myDict[master] == 0:
+                    self.warningBox("Invalid Entry",
+                        "Make sure each master corresponds to an active port.")
+                    save_bool = False
+                
 
             
             if save_bool:
@@ -533,6 +540,10 @@ class Screen(aj.gui):
                 else:
                     self.data.setActivePorts(self.gasDict)
                     self.render2fc2()
+            self.slaveDict = {1:[9,0.0, False, False], 2:[9,0.0, False, False], 
+                        3:[9,0.0, False, False], 4:[9,0.0, False, False], 
+                        5:[9,0.0, False, False], 6:[9,0.0, False, False], 
+                        7:[9,0.0, False, False], 8:[9,0.0, False, False]} 
         
 
         def removeSlaveDetails(index):
