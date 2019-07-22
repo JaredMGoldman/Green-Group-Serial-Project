@@ -1,20 +1,22 @@
-# import serial
+import serial
 
-# print(1)
-# ser = serial.Serial(
-#     port='/dev/cu.usbserial-AM00HUNS',
-#     baudrate=9600,
-#     parity=serial.PARITY_EVEN,
-#     stopbits=serial.STOPBITS_ONE,
-#     bytesize=serial.EIGHTBITS
-# )
-# print(2)
-# ser.isOpen()
-# myString = 'PU R <cr>'
-# b = myString.encode('ascii')
-# ser.write(b)
-# print(3)
-# ret = ser.read(4)
+print(1)
+ser = serial.Serial(
+    port='/dev/cu.usbserial-AM00HUNS',
+    baudrate=9600,
+    parity=serial.PARITY_EVEN,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS
+)
+print(2)
+CARRAIGE_RETURN = "<cr>"
+CARRAIGE_RETURN = CARRAIGE_RETURN.encode('utf-8')
+ser.isOpen()
+myString = 'KD <cr>'
+myString = myString.encode('utf-8')
+ser.write(myString)
+print(3)
+# ret = ser.read_until(CARRAIGE_RETURN)
 # ret = ret.decode('ascii')
 # print(4)
 
