@@ -141,16 +141,11 @@ class Screen(aj.gui):
             save = self.yesNoBox("Save Experiment Information",
                 "Would you like to save the current experimental setup?")
             if save:
-                # self.removeAllWidgets()
-                # self.addLabel('', 
-                #     'Choose a destination for the experimental configuration')
-                # self.addDirectoryEntry("File Location")
-                # self.addButton("Finalize Location", final)
                 self.errflag = 1
                 self.removeAllWidgets()
                 self.addLabel('', 
                     'Choose a destination for the experimental configuration', colspan = 2)
-                self.addLabel("Intrusctions", "Pleasse enter a name for your setup:")
+                self.addLabel("Intrusctions", "Please enter a name for your setup:")
                 self.addEntry("Filename", row = 1, column = 1)
                 self.addDirectoryEntry("File Location", colspan = 2)
                 self.addButton("Finalize Location", final, colspan = 2)
@@ -505,8 +500,6 @@ class Screen(aj.gui):
                         "Make sure each master corresponds to an active port.")
                     save_bool = False
                 
-
-            
             if save_bool:
                 for i in range(1, 9):
                     if self.gasCtrDict[i] is not None:
@@ -529,14 +522,13 @@ class Screen(aj.gui):
                         self.removeAllWidgets()
                         self.addLabel('', 
                             'Choose a destination for the experimental configuration', colspan = 2)
-                        self.addLabel("Intrusctions", "Pleasse enter a name for your setup:")
+                        self.addLabel("Intrusctions", "Please enter a name for your setup:")
                         self.addEntry("Filename", row = 1, column = 1)
                         self.addDirectoryEntry("File Location", colspan = 2)
                         self.addButton("Finalize Location", final, colspan = 2)
                     else:
                         self.stop()
                         self.data.beginExperiment()
-
                 else:
                     self.data.setActivePorts(self.gasDict)
                     self.render2fc2()
@@ -653,7 +645,6 @@ class Screen(aj.gui):
                     self.addLabel("gas ctr" + str(self.gasCtr), "", row= rows, column = col)
                     self.gasCtrDict[i] = None
                     self.gasCtr += 1
-
                     self.slaveDict[i][3] = False
                     removeSlaveDetails(i)
         
@@ -669,7 +660,6 @@ class Screen(aj.gui):
             else:
                 self.render2p1() 
             
-        
         # Initialize the widgets of the window
         self.removeAllWidgets()
         self.addButton("\u21A9", back)
@@ -782,9 +772,7 @@ class Screen(aj.gui):
             row = 2, column = 1)
         self.addButton("Okay", push, colspan = 2)
         self.setButtonBg("Okay", "LimeGreen")
-
-
-                  
+           
                                     #########################################
                                     ################ PRESSURE ###############     
                                     ######################################### 
@@ -1174,8 +1162,6 @@ class Screen(aj.gui):
         self.addButton("Okay", push, colspan = 2)
         self.setButtonBg("Okay", "LimeGreen")
 
-            
-
     def render1(self):
         """
         input:
@@ -1332,5 +1318,4 @@ class Screen(aj.gui):
             press)
         self.setButtonBg("Start", 
             "LimeGreen")
-        
         self.go()
