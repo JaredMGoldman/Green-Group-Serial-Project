@@ -975,7 +975,7 @@ class Screen(aj.gui):
             self.addNumericEntry("'DFR" + str(self.pressureSerial),
                 row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addOptionBox(str(self.pressureSerial) + "'", 
+            self.addLabel(str(self.pressureSerial) + "'", 
                 "Pa",row = self.rowCtr, 
                 column= self.colCtr)
             self.colCtr += 1
