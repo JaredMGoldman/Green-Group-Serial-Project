@@ -1,6 +1,6 @@
 import appJar as aj
 import pickle
-from enum import Enum
+from SerialController import SerialController
 import numpy as np
 import time
 import csv
@@ -24,6 +24,8 @@ class Controller:
         self.__save_list = list()       # Used when loading or saving experiemental setup
 
         self.__gas_dex = {}
+
+        self.__serialController = None
         #### Experimental Information ####
         
         self.__pressureCtrlBool = False
@@ -105,7 +107,7 @@ class Controller:
         """
         conventional setter for behavior of a gas
         """
-        [port] = port
+        port = port
         self.__MFCBehaviorList.append([port,gas,behavior, 
             start_time, end_time, magnitude0, 
             magnitude1, oscillations])
@@ -135,24 +137,20 @@ class Controller:
         determines slave status to ensure proper experimental setup of instument
         designed to update setpoints and datapoints every 5 seconds
         """
+        self.__serialController = SerialController()
+        self.__serialController.default()
         for port in self.__activePorts.keys():
             if self.__activePorts[port] != None:
                 self.__gas_dex[len(self.__flow_points)] = port
+                self.__serialController.openPort(port)
                 self.__flow_points.append([])
-        
-        # for port in self.__slaveBehaviorList:
-        #     if port[0]:
-        #         make port = port[1] a slave with ratio and master id given
-
-        #         print('slave functionality')
         
         self.__start = time.time()
         total_time = time.time()-self.__start
         while total_time <= self.__cycle * self.__cycleLength * 60:
-            time.sleep(0.5)
-            self.dataUpdate()
             self.setpointUpdate()
             total_time = time.time()-self.__start
+            self.__time_points.append(total_time)
             minutes = int(total_time/60)
             seconds = int(total_time % 60)
             print("Total time: " + str(minutes) +":" + str(seconds))
@@ -214,12 +212,11 @@ class Controller:
         used to set next setpoint
         """
         
-        p0 = mag0 
-        p1 = mag1 
-
+        p0 = mag0
+        p1 = mag1
 
         slope = ((p1 - p0)/ ((end-start)*60.0))* t
-        y_int = p0 - ((p1-p0)/((end-start)*60.0)) * start
+        y_int = p1 - ((p1-p0)/((end-start)*60.0)) * end * 60.0
 
         return slope + y_int
 
@@ -228,14 +225,14 @@ class Controller:
         Exponential relationship of gas flow/pressure as a function of time 
         used to set next setpoint
         """
-        p0 = mag0 
+        p0 = mag0
         p1 = mag1 
     
         tot = (end-start)*60.0
         r = (np.log(p1)-np.log(p0))/(tot)
         a = p0*np.exp(-r*tot)
 
-        return a*np.exp(r*t)
+        return a*np.exp(r*t)/2.0
 
     def periodic (self, start, end, mag0, mag1, oscl, t):
         """
@@ -250,18 +247,7 @@ class Controller:
         disp = (p1 + p0) / 2.0
 
         return amp * np.sin(per) + disp
-
-    def dataUpdate(self):
-        """
-        near-simultanious instantiation of time, flow rate and pressure readings
-        """
-        self.__time_points.append(time.time() - self.__start)
-        # self.__pressure_points.append( Figure out how to get actual pressure from machine )
-        # for port_index in range(len(self.__activePorts)):
-            # self.__flow_points[port_index].append( Figure out how to get flow rate of specific port from machine) for self.activePorts[port_index]
-        # print('Update Data')
-        
-    
+            
     
     def setpointUpdate(self):
         """
@@ -287,22 +273,17 @@ class Controller:
                     elif behave[0] == 'Periodic':
                         pressure_setpoint = self.periodic(behave[1], 
                             behave[2], behave[3],behave[4], behave[5], t)
+                    pressure_setpoint = self.__serialController.pressureSendAndReceive(pressure_setpoint)
                     self.__pressure_points.append(pressure_setpoint)
-                    for port in self.__flow_points:
-                        port.append(2)
+                    for key in self.__gas_dex.keys():
+                        self.__flow_points[key].append(self.__serialController.receiveFlow(self.__gas_dex[key]))
                     # enter setpoint to machine once I figure out how
         else:
-            self.__pressure_points.append(1)
+            self.__pressure_points.append(self.__serialController.receivePressure())
             for behave in self.__MFCBehaviorList:
                 port = behave[0]
 
                 if t > behave[3]*60.0 and t < behave[4]*60.0:
-                    # slave = False
-
-                    # for p in self.__slaveBehaviorList:
-                    #     if port == p[1] and not p[0]:
-                    #         slave = True
-                    #         break
                     if behave[2] == 'Static':
                         flow_setpoint = self.static(behave[5])
                     
@@ -320,9 +301,8 @@ class Controller:
                         flow_setpoint = self.periodic(
                             behave[3], behave[4], behave[5], 
                             behave[6], behave[7], t)
-                    self.__flow_points[port-1].append(flow_setpoint)
-                    
-                    # enter setpoint to machine once I figure out how
+                    self.__flow_points[port-1].append(self.__serialController.flowSendAndReceive(flow_setpoint, port))
+
             for i in self.__gas_dex.keys():
                 slave = self.__slaveBehaviorList[self.__gas_dex[i]-1]
                 if slave[0]:
@@ -330,7 +310,9 @@ class Controller:
                     for j in self.__gas_dex.keys():
                         if master == self.__gas_dex[j]:
                             break
-                    self.__flow_points[i] = np.multiply(self.__flow_points[j],slave[3])
+                    setpoint = self.__serialController.flowSendAndReceive(np.multiply(self.__flow_points[j][-1],slave[3]), slave[1])
+                    self.__flow_points[i].append(setpoint)
+                     
     
     def endExperiment(self):
         def push(btn):
@@ -338,7 +320,6 @@ class Controller:
             my_name = app.getEntry("File Name")
             my_file = my_entry + "/" + my_name+ ".csv"
             my_file.replace(" ", "_")
-            # app.stop()
             
             header = ["Time (s)", "Pressure (Torr)"]
             for i in self.__activePorts.keys():
@@ -413,8 +394,8 @@ class Controller:
                     writer.writerow(row)
 
             app.stop()
-            
-            
+
+        self.__serialController.close()    
         app = aj.gui()
         app.setFont(size = 24, family = "Times")
         app.addLabel ("", "Provide a location and a name for the experimental data file")
