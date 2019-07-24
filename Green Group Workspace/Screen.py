@@ -945,7 +945,7 @@ class Screen(aj.gui):
             self.addNumericEntry("DFR" + str(self.pressureSerial),
                 row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
-            self.addLabel(str(self.pressureSerial), "Pa", 
+            self.addLabel(str(self.pressureSerial), "Mpa", 
                 row = self.rowCtr, column= self.colCtr)
             self.colCtr += 1
 
@@ -964,7 +964,7 @@ class Screen(aj.gui):
                 row = self.rowCtr, column = self.colCtr)
             self.colCtr += 1
             self.addLabel(str(self.pressureSerial) + "'", 
-                "Pa",row = self.rowCtr, 
+                "Mpa",row = self.rowCtr, 
                 column= self.colCtr)
             self.colCtr += 1
 
@@ -1100,7 +1100,7 @@ class Screen(aj.gui):
 
         This function creates the screen in which the user can enter the 
         data about the number of cycles and the time of each cycle.  This 
-        data is saved as self.cycles and self.lengthEach, respectively.
+        data is saved as "self.cycl"es and self.lengthEach, respectively.
         """
         def push(btn):
             """

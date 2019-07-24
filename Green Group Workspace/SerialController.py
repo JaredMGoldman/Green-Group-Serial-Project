@@ -51,7 +51,7 @@ class SerialController:
 
     def default(self):
         # Make default pressure units 1000 Pa
-        setter = 'PU 24 \r'
+        setter = 'PU 86 \r'
         setter = setter.encode('utf-8')
         getter = 'PU R \r'
         getter = getter.encode('utf-8')
@@ -71,7 +71,7 @@ class SerialController:
 
     
     def pressureSendAndReceive(self, setpoint):
-        setpoint = self.format(setpoint)
+        setpoint = self.formatP(setpoint)
         setter = ('PS ' + setpoint + ' \r')
         setter = setter.encode()
         self.ser.write(setter)
@@ -93,7 +93,7 @@ class SerialController:
         self.ser.write(getter)
         out = self.ser.read_until(self.CARRAIGE_RETURN)
         out = int(out)
-        out = out * 0.1
+        out = out * 0.01
         return out
 
     def receiveFlow(self, port):
@@ -120,6 +120,12 @@ class SerialController:
             command = command.encode()
             self.ser.write(command)
         self.ser.close()
+
+    def formatP(self, setpoint):
+        setpoint = int(setpoint * 100.0)
+        setpoint = str(setpoint)
+        setpoint = setpoint.zfill(4)
+        return setpoint
 
     def format(self, setpoint):
         setpoint = int(setpoint * 10.0)
