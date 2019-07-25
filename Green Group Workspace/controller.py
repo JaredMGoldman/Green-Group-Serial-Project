@@ -30,7 +30,7 @@ class Controller:
         
         self.__pressureCtrlBool = False
         
-        self.__MFCBehaviorList = list() 
+        self.MFCBehaviorList = list() 
 
         self.__pressureBehaviorList = list()
 
@@ -75,8 +75,7 @@ class Controller:
         """
         conventional setter for behavior of a gas
         """
-        port = port
-        self.__MFCBehaviorList.append([port,gas,behavior, 
+        self.MFCBehaviorList.append([port,gas,behavior, 
             start_time, end_time, magnitude0, 
             magnitude1, oscillations])
 
@@ -133,7 +132,7 @@ class Controller:
         """
         self.__save_list = [[self.__pressureCtrlBool, self.__cycle, self.__cycleLength]]
         self.__save_list.append(self.__pressureBehaviorList)
-        self.__save_list.append(self.__MFCBehaviorList)
+        self.__save_list.append(self.MFCBehaviorList)
         self.__save_list.append(self.__slaveBehaviorList)
         self.__save_list.append(self.__activePorts)
 
@@ -146,9 +145,12 @@ class Controller:
         self.__cycle = self.__save_list[0][1]
         self.__cycleLength = self.__save_list[0][2]
         self.__pressureBehaviorList = self.__save_list[1]     
-        self.__MFCBehaviorList = self.__save_list[2]
+        self.MFCBehaviorList = self.__save_list[2]
         self.__slaveBehaviorList = self.__save_list[3]
         self.__activePorts = self.__save_list[4]
+        for behave in  self.MFCBehaviorList:
+            if behave[0] is list:
+                behave[0] = behave[0][0]
 
     def saveData(self, location):
         """
@@ -248,7 +250,7 @@ class Controller:
                     # enter setpoint to machine once I figure out how
         else:
             self.__pressure_points.append(self.__serialController.receivePressure())
-            for behave in self.__MFCBehaviorList:
+            for behave in  self.MFCBehaviorList:
                 port = behave[0]
 
                 if t > behave[3]*60.0 and t < behave[4]*60.0:
@@ -269,7 +271,9 @@ class Controller:
                         flow_setpoint = self.periodic(
                             behave[3], behave[4], behave[5], 
                             behave[6], behave[7], t)
-                    self.__flow_points[port-1].append(self.__serialController.flowSendAndReceive(flow_setpoint, port))
+                    for key in self.__gas_dex.keys():
+                        if self.__gas_dex[key] == port:
+                            self.__flow_points[key].append(self.__serialController.flowSendAndReceive(flow_setpoint, port))
 
             for i in self.__gas_dex.keys():
                 slave = self.__slaveBehaviorList[self.__gas_dex[i]-1]

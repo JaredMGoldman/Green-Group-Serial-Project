@@ -207,8 +207,9 @@ class Screen(aj.gui):
             
             if save_criteria:
                 self.pressureSerial += 1
+                [port] = self.gasIndex
                 self.data.setMFCBehaviorList(
-                    self.gasDict[self.gasIndex[self.iter]], self.gasIndex, 
+                    self.gasDict[self.gasIndex[self.iter]], port, 
                     self.behavior, self.initialTime, stop, mag0, 
                     mag1, oscillations)
                 self.initialTime = stop
@@ -422,6 +423,7 @@ class Screen(aj.gui):
             output:
                     previous page
             """
+            self.data.MFCBehaviorList = []
             self.render2fc1()
         
         # Code for initializing the flow behavior selection screen

@@ -1,7 +1,5 @@
 import serial
 
-
-
 class SerialController:
         
     def __init__(self):
@@ -56,8 +54,8 @@ class SerialController:
         getter = 'PU R \r'
         getter = getter.encode('utf-8')
         self.ser.write(setter)
-        self.ser.write(getter)
-        self.ser.read_until(self.CARRAIGE_RETURN)
+        # self.ser.write(getter)
+        # self.ser.read_until(self.CARRAIGE_RETURN)
 
         # Make default flow rate units 1000 SCCM
         for i in range (1,9):
@@ -66,8 +64,8 @@ class SerialController:
             getter = ('RA ' + str(i) + ' R \r')
             getter = getter.encode('utf-8')
             self.ser.write(setter)
-            self.ser.write(getter)
-            self.ser.read_until(self.CARRAIGE_RETURN)
+            # self.ser.write(getter)
+            # self.ser.read_until(self.CARRAIGE_RETURN)
 
     
     def pressureSendAndReceive(self, setpoint):
